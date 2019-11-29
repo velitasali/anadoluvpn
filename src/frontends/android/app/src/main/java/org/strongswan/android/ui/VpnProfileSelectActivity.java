@@ -18,7 +18,7 @@ package org.strongswan.android.ui;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.ui.VpnProfileListFragment.OnVpnProfileSelectedListener;
 

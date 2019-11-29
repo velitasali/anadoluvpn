@@ -23,7 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.logic.imc.RemediationInstruction;
 
 import androidx.fragment.app.ListFragment;

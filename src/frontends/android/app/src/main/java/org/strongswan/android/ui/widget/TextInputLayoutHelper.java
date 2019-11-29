@@ -29,7 +29,7 @@ import android.widget.TextView;
 
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;

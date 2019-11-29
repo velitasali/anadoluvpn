@@ -32,7 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.logic.VpnStateService;
 import org.strongswan.android.logic.VpnStateService.ErrorState;

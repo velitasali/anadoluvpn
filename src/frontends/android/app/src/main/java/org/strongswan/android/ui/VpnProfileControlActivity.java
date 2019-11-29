@@ -30,7 +30,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.data.VpnType.VpnTypeFeature;
@@ -46,9 +46,9 @@ import androidx.fragment.app.FragmentTransaction;
 
 public class VpnProfileControlActivity extends AppCompatActivity
 {
-	public static final String START_PROFILE = "org.strongswan.android.action.START_PROFILE";
-	public static final String DISCONNECT = "org.strongswan.android.action.DISCONNECT";
-	public static final String EXTRA_VPN_PROFILE_ID = "org.strongswan.android.VPN_PROFILE_ID";
+	public static final String START_PROFILE = "com.velitasali.android.vpn.action.START_PROFILE";
+	public static final String DISCONNECT = "com.velitasali.android.vpn.action.DISCONNECT";
+	public static final String EXTRA_VPN_PROFILE_ID = "com.velitasali.android.vpn.VPN_PROFILE_ID";
 
 	private static final int PREPARE_VPN_SERVICE = 0;
 	private static final String WAITING_FOR_RESULT = "WAITING_FOR_RESULT";
@@ -537,7 +537,7 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 */
 	public static class VpnNotSupportedError extends AppCompatDialogFragment
 	{
-		static final String ERROR_MESSAGE_ID = "org.strongswan.android.VpnNotSupportedError.MessageId";
+		static final String ERROR_MESSAGE_ID = "com.velitasali.android.vpn.VpnNotSupportedError.MessageId";
 
 		public static void showWithMessage(AppCompatActivity activity, int messageId)
 		{

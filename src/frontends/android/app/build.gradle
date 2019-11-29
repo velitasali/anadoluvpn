@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId "org.strongswan.android"
+        applicationId "com.velitasali.android.vpn"
         minSdkVersion 15
         targetSdkVersion 28
         versionCode 64

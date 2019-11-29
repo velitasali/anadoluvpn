@@ -25,7 +25,7 @@ import android.view.MenuItem;
 
 import com.google.android.material.tabs.TabLayout;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.logic.TrustedCertificateManager;
 import org.strongswan.android.logic.TrustedCertificateManager.TrustedCertificateSource;
@@ -43,7 +43,7 @@ import androidx.viewpager.widget.ViewPager;
 
 public class TrustedCertificatesActivity extends AppCompatActivity implements TrustedCertificateListFragment.OnTrustedCertificateSelectedListener, OnCertificateDeleteListener
 {
-	public static final String SELECT_CERTIFICATE = "org.strongswan.android.action.SELECT_CERTIFICATE";
+	public static final String SELECT_CERTIFICATE = "com.velitasali.android.vpn.action.SELECT_CERTIFICATE";
 	private static final String DIALOG_TAG = "Dialog";
 	private static final int IMPORT_CERTIFICATE = 0;
 	private TrustedCertificatesPagerAdapter mAdapter;

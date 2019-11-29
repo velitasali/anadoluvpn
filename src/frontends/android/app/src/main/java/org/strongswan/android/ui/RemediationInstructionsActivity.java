@@ -19,7 +19,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.MenuItem;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.logic.imc.RemediationInstruction;
 import org.strongswan.android.ui.RemediationInstructionsFragment.OnRemediationInstructionSelectedListener;
 

@@ -26,7 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.logic.TrustedCertificateManager;
 

@@ -28,7 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.logic.TrustedCertificateManager;
 import org.strongswan.android.ui.VpnProfileListFragment.OnVpnProfileSelectedListener;
@@ -45,55 +45,40 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-public class MainActivity extends AppCompatActivity implements OnVpnProfileSelectedListener
-{
-	public static final String CONTACT_EMAIL = "android@strongswan.org";
+public class MainActivity extends AppCompatActivity implements OnVpnProfileSelectedListener {
 	public static final String EXTRA_CRL_LIST = "org.strongswan.android.CRL_LIST";
 
-	/**
-	 * Use "bring your own device" (BYOD) features
-	 */
+	// Use "bring your own device" (BYOD) features
 	public static final boolean USE_BYOD = true;
 
 	private static final String DIALOG_TAG = "Dialog";
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		ActionBar bar = getSupportActionBar();
-		bar.setDisplayShowHomeEnabled(true);
-		bar.setDisplayShowTitleEnabled(false);
-		bar.setIcon(R.drawable.ic_launcher);
-
-		/* load CA certificates in a background task */
+		// load CA certificates in a background task
 		new LoadCertificatesTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
+	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu)
-	{
+	public boolean onPrepareOptionsMenu(Menu menu) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
-		{
 			menu.removeItem(R.id.menu_import_profile);
-		}
+
 		return true;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 			case R.id.menu_import_profile:
 				Intent intent = new Intent(this, VpnProfileImportActivity.class);
 				startActivity(intent);
@@ -119,8 +104,7 @@ public class MainActivity extends AppCompatActivity implements OnVpnProfileSelec
 	}
 
 	@Override
-	public void onVpnProfileSelected(VpnProfile profile)
-	{
+	public void onVpnProfileSelected(VpnProfile profile) {
 		Intent intent = new Intent(this, VpnProfileControlActivity.class);
 		intent.setAction(VpnProfileControlActivity.START_PROFILE);
 		intent.putExtra(VpnProfileControlActivity.EXTRA_VPN_PROFILE_ID, profile.getUUID().toString());
@@ -130,23 +114,19 @@ public class MainActivity extends AppCompatActivity implements OnVpnProfileSelec
 	/**
 	 * Ask the user whether to clear the CRL cache.
 	 */
-	private void clearCRLs()
-	{
+	private void clearCRLs() {
 		final String FILE_PREFIX = "crl-";
 		ArrayList<String> list = new ArrayList<>();
 
 		for (String file : fileList())
-		{
 			if (file.startsWith(FILE_PREFIX))
-			{
 				list.add(file);
-			}
-		}
-		if (list.size() == 0)
-		{
+
+		if (list.size() == 0) {
 			Toast.makeText(this, R.string.clear_crl_cache_msg_none, Toast.LENGTH_SHORT).show();
 			return;
 		}
+
 		removeFragmentByTag(DIALOG_TAG);
 
 		Bundle args = new Bundle();
@@ -157,73 +137,47 @@ public class MainActivity extends AppCompatActivity implements OnVpnProfileSelec
 		dialog.show(this.getSupportFragmentManager(), DIALOG_TAG);
 	}
 
-	/**
-	 * Class that loads the cached CA certificates.
-	 */
-	private class LoadCertificatesTask extends AsyncTask<Void, Void, TrustedCertificateManager>
-	{
+	// Class that loads the cached CA certificates.
+	private class LoadCertificatesTask extends AsyncTask<Void, Void, TrustedCertificateManager> {
 		@Override
-		protected TrustedCertificateManager doInBackground(Void... params)
-		{
+		protected TrustedCertificateManager doInBackground(Void... params) {
 			return TrustedCertificateManager.getInstance().load();
 		}
 	}
 
-	/**
-	 * Dismiss dialog if shown
-	 */
-	public void removeFragmentByTag(String tag)
-	{
+	// Dismiss dialog if shown
+	public void removeFragmentByTag(String tag) {
 		FragmentManager fm = getSupportFragmentManager();
 		Fragment login = fm.findFragmentByTag(tag);
-		if (login != null)
-		{
+		if (login != null) {
 			FragmentTransaction ft = fm.beginTransaction();
 			ft.remove(login);
 			ft.commit();
 		}
 	}
 
-	/**
-	 * Confirmation dialog to clear CRL cache
-	 */
-	public static class CRLCacheDialog extends AppCompatDialogFragment
-	{
+	// Confirmation dialog to clear CRL cache
+	public static class CRLCacheDialog extends AppCompatDialogFragment {
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			final List<String> list = getArguments().getStringArrayList(EXTRA_CRL_LIST);
 			String size;
 			long s = 0;
 
-			for (String file : list)
-			{
+			for (String file : list) {
 				File crl = getActivity().getFileStreamPath(file);
 				s += crl.length();
 			}
 			size = Formatter.formatFileSize(getActivity(), s);
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-					.setTitle(R.string.clear_crl_cache_title)
-					.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-					{
-						@Override
-						public void onClick(DialogInterface dialog, int which)
-						{
-							dismiss();
-						}
-					})
-					.setPositiveButton(R.string.clear, new DialogInterface.OnClickListener()
-					{
-						@Override
-						public void onClick(DialogInterface dialog, int whichButton)
-						{
-							for (String file : list)
-							{
-								getActivity().deleteFile(file);
-							}
-						}
-					});
+				.setTitle(R.string.clear_crl_cache_title)
+				.setNegativeButton(android.R.string.cancel, (dialog, which) -> dismiss())
+				.setPositiveButton(R.string.clear, (dialog, whichButton) -> {
+					for (String file : list) {
+						getActivity().deleteFile(file);
+					}
+				});
 			builder.setMessage(getActivity().getResources().getQuantityString(R.plurals.clear_crl_cache_msg, list.size(), list.size(), size));
 			return builder.create();
 		}

@@ -29,7 +29,7 @@ import android.view.View;
 import android.widget.Filter;
 import android.widget.ListView;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.ui.adapter.SelectedApplicationEntry;
 import org.strongswan.android.ui.adapter.SelectedApplicationsAdapter;

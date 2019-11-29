@@ -25,7 +25,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.data.VpnType;
@@ -44,7 +44,7 @@ import androidx.core.content.ContextCompat;
 
 public class VpnStateService extends Service
 {
-	private final HashSet<VpnStateListener> mListeners = new HashSet<VpnStateListener>();
+	private final HashSet<VpnStateListener> mListeners = new HashSet<>();
 	private final IBinder mBinder = new LocalBinder();
 	private long mConnectionID = 0;
 	private Handler mHandler;
@@ -54,7 +54,7 @@ public class VpnStateService extends Service
 	private ImcState mImcState = ImcState.UNKNOWN;
 	private final LinkedList<RemediationInstruction> mRemediationInstructions = new LinkedList<RemediationInstruction>();
 	private static long RETRY_INTERVAL = 1000;
-	/* cap the retry interval at 2 minutes */
+	// cap the retry interval at 2 minutes
 	private static long MAX_RETRY_INTERVAL = 120000;
 	private static int RETRY_MSG = 1;
 	private RetryTimeoutProvider mTimeoutProvider = new RetryTimeoutProvider();

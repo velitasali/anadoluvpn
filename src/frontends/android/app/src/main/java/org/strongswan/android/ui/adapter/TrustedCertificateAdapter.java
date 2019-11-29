@@ -17,7 +17,7 @@ package org.strongswan.android.ui.adapter;
 
 import java.util.List;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.security.TrustedCertificateEntry;
 
 import android.content.Context;

@@ -34,7 +34,7 @@ import android.provider.OpenableColumns;
 
 public class LogContentProvider extends ContentProvider
 {
-	private static final String AUTHORITY = "org.strongswan.android.content.log";
+	private static final String AUTHORITY = "com.velitasali.android.vpn.content.log";
 	/* an Uri is valid for 30 minutes */
 	private static final long URI_VALIDITY = 30 * 60 * 1000;
 	private static ConcurrentHashMap<Uri, Long> mUris = new ConcurrentHashMap<Uri, Long>();

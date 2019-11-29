@@ -26,7 +26,7 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.strongswan.android.R;
+import com.velitasali.android.vpn.R;
 import org.strongswan.android.ui.widget.CheckableLinearLayout;
 
 import java.util.ArrayList;
