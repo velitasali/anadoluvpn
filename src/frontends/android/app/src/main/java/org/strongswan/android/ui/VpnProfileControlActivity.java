@@ -17,11 +17,7 @@ package org.strongswan.android.ui;
 
 import android.app.Dialog;
 import android.app.Service;
-import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.*;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -29,7 +25,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfileDataSource;
@@ -37,15 +38,7 @@ import org.strongswan.android.data.VpnType.VpnTypeFeature;
 import org.strongswan.android.logic.VpnStateService;
 import org.strongswan.android.logic.VpnStateService.State;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
-public class VpnProfileControlActivity extends AppCompatActivity
-{
+public class VpnProfileControlActivity extends AppCompatActivity {
 	public static final String START_PROFILE = "com.velitasali.android.vpn.action.START_PROFILE";
 	public static final String DISCONNECT = "com.velitasali.android.vpn.action.DISCONNECT";
 	public static final String EXTRA_VPN_PROFILE_ID = "com.velitasali.android.vpn.VPN_PROFILE_ID";
@@ -61,48 +54,40 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	private Bundle mProfileInfo;
 	private boolean mWaitingForResult;
 	private VpnStateService mService;
-	private final ServiceConnection mServiceConnection = new ServiceConnection()
-	{
+	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 		@Override
-		public void onServiceDisconnected(ComponentName name)
-		{
+		public void onServiceDisconnected(ComponentName name) {
 			mService = null;
 		}
 
 		@Override
-		public void onServiceConnected(ComponentName name, IBinder service)
-		{
-			mService = ((VpnStateService.LocalBinder)service).getService();
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			mService = ((VpnStateService.LocalBinder) service).getService();
 			handleIntent();
 		}
 	};
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (savedInstanceState != null)
-		{
+		if (savedInstanceState != null) {
 			mWaitingForResult = savedInstanceState.getBoolean(WAITING_FOR_RESULT, false);
 		}
 		this.bindService(new Intent(this, VpnStateService.class),
-						 mServiceConnection, Service.BIND_AUTO_CREATE);
+			mServiceConnection, Service.BIND_AUTO_CREATE);
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState)
-	{
+	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putBoolean(WAITING_FOR_RESULT, mWaitingForResult);
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
 		super.onDestroy();
-		if (mService != null)
-		{
+		if (mService != null) {
 			this.unbindService(mServiceConnection);
 		}
 	}
@@ -111,15 +96,13 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 * Due to launchMode=singleTop this is called if the Activity already exists
 	 */
 	@Override
-	protected void onNewIntent(Intent intent)
-	{
+	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 
-		/* store this intent in case the service is not yet connected or the activity is restarted */
+		// store this intent in case the service is not yet connected or the activity is restarted
 		setIntent(intent);
 
-		if (mService != null)
-		{
+		if (mService != null) {
 			handleIntent();
 		}
 	}
@@ -130,78 +113,61 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 *
 	 * @param profileInfo a bundle containing the information about the profile to be started
 	 */
-	protected void prepareVpnService(Bundle profileInfo)
-	{
+	protected void prepareVpnService(Bundle profileInfo) {
 		Intent intent;
 
-		if (mWaitingForResult)
-		{
+		if (mWaitingForResult) {
 			mProfileInfo = profileInfo;
 			return;
 		}
 
-		try
-		{
+		try {
 			intent = VpnService.prepare(this);
-		}
-		catch (IllegalStateException ex)
-		{
-			/* this happens if the always-on VPN feature (Android 4.2+) is activated */
+		} catch (IllegalStateException ex) {
+			// this happens if the always-on VPN feature (Android 4.2+) is activated
 			VpnNotSupportedError.showWithMessage(this, R.string.vpn_not_supported_during_lockdown);
 			return;
-		}
-		catch (NullPointerException ex)
-		{
-			/* not sure when this happens exactly, but apparently it does */
+		} catch (NullPointerException ex) {
+			// not sure when this happens exactly, but apparently it does
 			VpnNotSupportedError.showWithMessage(this, R.string.vpn_not_supported);
 			return;
 		}
-		/* store profile info until the user grants us permission */
+		// store profile info until the user grants us permission
 		mProfileInfo = profileInfo;
-		if (intent != null)
-		{
-			try
-			{
+		if (intent != null) {
+			try {
 				mWaitingForResult = true;
 				startActivityForResult(intent, PREPARE_VPN_SERVICE);
-			}
-			catch (ActivityNotFoundException ex)
-			{
-				/* it seems some devices, even though they come with Android 4,
-				 * don't have the VPN components built into the system image.
-				 * com.android.vpndialogs/com.android.vpndialogs.ConfirmDialog
-				 * will not be found then */
+			} catch (ActivityNotFoundException ex) {
+				// it seems some devices, even though they come with Android 4,
+				// don't have the VPN components built into the system image.
+				// com.android.vpndialogs/com.android.vpndialogs.ConfirmDialog
+				// will not be found then
 				VpnNotSupportedError.showWithMessage(this, R.string.vpn_not_supported);
 				mWaitingForResult = false;
 			}
-		}
-		else
-		{	/* user already granted permission to use VpnService */
+		} else {
+			// user already granted permission to use VpnService
 			onActivityResult(PREPARE_VPN_SERVICE, RESULT_OK, null);
 		}
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
-		switch (requestCode)
-		{
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
 			case PREPARE_VPN_SERVICE:
 				mWaitingForResult = false;
-				if (resultCode == RESULT_OK && mProfileInfo != null)
-				{
-					if (mService != null)
-					{
+				if (resultCode == RESULT_OK && mProfileInfo != null) {
+					if (mService != null) {
 						mService.connect(mProfileInfo, true);
 					}
 					finish();
-				}
-				else
-				{	/* this happens if the always-on VPN feature is activated by a different app or the user declined */
-					if (getSupportFragmentManager().isStateSaved())
-					{	/* onActivityResult() might be called when we aren't active anymore e.g. if the
-						 * user pressed the home button, if the activity is started again we land here
-						 * before onNewIntent() is called */
+				} else {
+					// this happens if the always-on VPN feature is activated by a different app or the user declined
+					if (getSupportFragmentManager().isStateSaved()) {
+						// onActivityResult() might be called when we aren't active anymore e.g. if the
+						// user pressed the home button, if the activity is started again we land here
+						// before onNewIntent() is called
 						return;
 					}
 					VpnNotSupportedError.showWithMessage(this, R.string.vpn_not_supported_no_permission);
@@ -217,14 +183,12 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 *
 	 * @return true if currently connected
 	 */
-	private boolean isConnected()
-	{
-		if (mService == null)
-		{
+	private boolean isConnected() {
+		if (mService == null) {
 			return false;
 		}
-		if (mService.getErrorState() != VpnStateService.ErrorState.NO_ERROR)
-		{	/* allow reconnecting (even to a different profile) without confirmation if there is an error */
+		if (mService.getErrorState() != VpnStateService.ErrorState.NO_ERROR) {
+			// allow reconnecting (even to a different profile) without confirmation if there is an error
 			return false;
 		}
 		return (mService.getState() == State.CONNECTED || mService.getState() == State.CONNECTING);
@@ -235,8 +199,7 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 *
 	 * @param profile VPN profile
 	 */
-	public void startVpnProfile(VpnProfile profile)
-	{
+	public void startVpnProfile(VpnProfile profile) {
 		Bundle profileInfo = new Bundle();
 		profileInfo.putString(VpnProfileDataSource.KEY_UUID, profile.getUUID().toString());
 		profileInfo.putString(VpnProfileDataSource.KEY_USERNAME, profile.getUsername());
@@ -246,8 +209,7 @@ public class VpnProfileControlActivity extends AppCompatActivity
 
 		removeFragmentByTag(DIALOG_TAG);
 
-		if (isConnected())
-		{
+		if (isConnected()) {
 			profileInfo.putBoolean(PROFILE_RECONNECT, mService.getProfile().getUUID().equals(profile.getUUID()));
 
 			ConfirmationDialog dialog = new ConfirmationDialog();
@@ -263,11 +225,9 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 *
 	 * @param profileInfo data about the profile
 	 */
-	private void startVpnProfile(Bundle profileInfo)
-	{
+	private void startVpnProfile(Bundle profileInfo) {
 		if (profileInfo.getBoolean(PROFILE_REQUIRES_PASSWORD) &&
-			profileInfo.getString(VpnProfileDataSource.KEY_PASSWORD) == null)
-		{
+			profileInfo.getString(VpnProfileDataSource.KEY_PASSWORD) == null) {
 			LoginDialog login = new LoginDialog();
 			login.setArguments(profileInfo);
 			login.show(getSupportFragmentManager(), DIALOG_TAG);
@@ -282,33 +242,25 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 *
 	 * @param intent Intent that caused us to start this
 	 */
-	private void startVpnProfile(Intent intent)
-	{
+	private void startVpnProfile(Intent intent) {
 		VpnProfile profile = null;
 
 		VpnProfileDataSource dataSource = new VpnProfileDataSource(this);
 		dataSource.open();
 		String profileUUID = intent.getStringExtra(EXTRA_VPN_PROFILE_ID);
-		if (profileUUID != null)
-		{
+		if (profileUUID != null) {
 			profile = dataSource.getVpnProfile(profileUUID);
-		}
-		else
-		{
+		} else {
 			long profileId = intent.getLongExtra(EXTRA_VPN_PROFILE_ID, 0);
-			if (profileId > 0)
-			{
+			if (profileId > 0) {
 				profile = dataSource.getVpnProfile(profileId);
 			}
 		}
 		dataSource.close();
 
-		if (profile != null)
-		{
+		if (profile != null) {
 			startVpnProfile(profile);
-		}
-		else
-		{
+		} else {
 			Toast.makeText(this, R.string.profile_not_found, Toast.LENGTH_LONG).show();
 			finish();
 		}
@@ -319,28 +271,24 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 *
 	 * @param intent Intent that caused us to start this
 	 */
-	private void disconnect(Intent intent)
-	{
+	private void disconnect(Intent intent) {
 		VpnProfile profile = null;
 
 		removeFragmentByTag(DIALOG_TAG);
 
 		String profileUUID = intent.getStringExtra(EXTRA_VPN_PROFILE_ID);
-		if (profileUUID != null)
-		{
+		if (profileUUID != null) {
 			VpnProfileDataSource dataSource = new VpnProfileDataSource(this);
 			dataSource.open();
 			profile = dataSource.getVpnProfile(profileUUID);
 			dataSource.close();
 		}
 
-		if (mService != null)
-		{
+		if (mService != null) {
 			if (mService.getState() == State.CONNECTED ||
-				mService.getState() == State.CONNECTING)
-			{
-				if (profile != null && profile.equals(mService.getProfile()))
-				{	/* allow explicit termination without confirmation */
+				mService.getState() == State.CONNECTING) {
+				if (profile != null && profile.equals(mService.getProfile())) {
+					// allow explicit termination without confirmation
 					mService.disconnect();
 					finish();
 					return;
@@ -351,9 +299,7 @@ public class VpnProfileControlActivity extends AppCompatActivity
 				ConfirmationDialog dialog = new ConfirmationDialog();
 				dialog.setArguments(args);
 				dialog.show(this.getSupportFragmentManager(), DIALOG_TAG);
-			}
-			else
-			{
+			} else {
 				finish();
 			}
 		}
@@ -362,16 +308,12 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	/**
 	 * Handle the Intent of this Activity depending on its action
 	 */
-	private void handleIntent()
-	{
+	private void handleIntent() {
 		Intent intent = getIntent();
 
-		if (START_PROFILE.equals(intent.getAction()))
-		{
+		if (START_PROFILE.equals(intent.getAction())) {
 			startVpnProfile(intent);
-		}
-		else if (DISCONNECT.equals(intent.getAction()))
-		{
+		} else if (DISCONNECT.equals(intent.getAction())) {
 			disconnect(intent);
 		}
 	}
@@ -379,12 +321,10 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	/**
 	 * Dismiss dialog if shown
 	 */
-	public void removeFragmentByTag(String tag)
-	{
+	public void removeFragmentByTag(String tag) {
 		FragmentManager fm = getSupportFragmentManager();
 		Fragment login = fm.findFragmentByTag(tag);
-		if (login != null)
-		{
+		if (login != null) {
 			FragmentTransaction ft = fm.beginTransaction();
 			ft.remove(login);
 			ft.commit();
@@ -395,58 +335,46 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 * Class that displays a confirmation dialog if a VPN profile is already connected
 	 * and then initiates the selected VPN profile if the user confirms the dialog.
 	 */
-	public static class ConfirmationDialog extends AppCompatDialogFragment
-	{
+	public static class ConfirmationDialog extends AppCompatDialogFragment {
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			final Bundle profileInfo = getArguments();
 			int icon = android.R.drawable.ic_dialog_alert;
 			int title = R.string.connect_profile_question;
 			int message = R.string.replaces_active_connection;
 			int button = R.string.connect;
 
-			if (profileInfo.getBoolean(PROFILE_RECONNECT))
-			{
+			if (profileInfo.getBoolean(PROFILE_RECONNECT)) {
 				icon = android.R.drawable.ic_dialog_info;
 				title = R.string.vpn_connected;
 				message = R.string.vpn_profile_connected;
 				button = R.string.reconnect;
-			}
-			else if (profileInfo.getBoolean(PROFILE_DISCONNECT))
-			{
+			} else if (profileInfo.getBoolean(PROFILE_DISCONNECT)) {
 				title = R.string.disconnect_question;
 				message = R.string.disconnect_active_connection;
 				button = R.string.disconnect;
 			}
 
-			DialogInterface.OnClickListener connectListener = new DialogInterface.OnClickListener()
-			{
+			DialogInterface.OnClickListener connectListener = new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					VpnProfileControlActivity activity = (VpnProfileControlActivity)getActivity();
+				public void onClick(DialogInterface dialog, int which) {
+					VpnProfileControlActivity activity = (VpnProfileControlActivity) getActivity();
 					activity.startVpnProfile(profileInfo);
 				}
 			};
-			DialogInterface.OnClickListener disconnectListener = new DialogInterface.OnClickListener()
-			{
+			DialogInterface.OnClickListener disconnectListener = new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					VpnProfileControlActivity activity = (VpnProfileControlActivity)getActivity();
-					if (activity.mService != null)
-					{
+				public void onClick(DialogInterface dialog, int which) {
+					VpnProfileControlActivity activity = (VpnProfileControlActivity) getActivity();
+					if (activity.mService != null) {
 						activity.mService.disconnect();
 					}
 					activity.finish();
 				}
 			};
-			DialogInterface.OnClickListener cancelListener = new DialogInterface.OnClickListener()
-			{
+			DialogInterface.OnClickListener cancelListener = new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					getActivity().finish();
 				}
 			};
@@ -456,30 +384,23 @@ public class VpnProfileControlActivity extends AppCompatActivity
 				.setTitle(String.format(getString(title), profileInfo.getString(PROFILE_NAME)))
 				.setMessage(message);
 
-			if (profileInfo.getBoolean(PROFILE_DISCONNECT))
-			{
+			if (profileInfo.getBoolean(PROFILE_DISCONNECT)) {
 				builder.setPositiveButton(button, disconnectListener);
-			}
-			else
-			{
+			} else {
 				builder.setPositiveButton(button, connectListener);
 			}
 
-			if (profileInfo.getBoolean(PROFILE_RECONNECT))
-			{
+			if (profileInfo.getBoolean(PROFILE_RECONNECT)) {
 				builder.setNegativeButton(R.string.disconnect, disconnectListener);
 				builder.setNeutralButton(android.R.string.cancel, cancelListener);
-			}
-			else
-			{
+			} else {
 				builder.setNegativeButton(android.R.string.cancel, cancelListener);
 			}
 			return builder.create();
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog)
-		{
+		public void onCancel(DialogInterface dialog) {
 			getActivity().finish();
 		}
 	}
@@ -488,36 +409,30 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 * Class that displays a login dialog and initiates the selected VPN
 	 * profile if the user confirms the dialog.
 	 */
-	public static class LoginDialog extends AppCompatDialogFragment
-	{
+	public static class LoginDialog extends AppCompatDialogFragment {
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			final Bundle profileInfo = getArguments();
 			LayoutInflater inflater = getActivity().getLayoutInflater();
 			View view = inflater.inflate(R.layout.login_dialog, null);
-			EditText username = (EditText)view.findViewById(R.id.username);
+			EditText username = (EditText) view.findViewById(R.id.username);
 			username.setText(profileInfo.getString(VpnProfileDataSource.KEY_USERNAME));
-			final EditText password = (EditText)view.findViewById(R.id.password);
+			final EditText password = (EditText) view.findViewById(R.id.password);
 
 			AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
 			adb.setView(view);
 			adb.setTitle(getString(R.string.login_title));
-			adb.setPositiveButton(R.string.login_confirm, new DialogInterface.OnClickListener()
-			{
+			adb.setPositiveButton(R.string.login_confirm, new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int whichButton)
-				{
-					VpnProfileControlActivity activity = (VpnProfileControlActivity)getActivity();
+				public void onClick(DialogInterface dialog, int whichButton) {
+					VpnProfileControlActivity activity = (VpnProfileControlActivity) getActivity();
 					profileInfo.putString(VpnProfileDataSource.KEY_PASSWORD, password.getText().toString().trim());
 					activity.prepareVpnService(profileInfo);
 				}
 			});
-			adb.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-			{
+			adb.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					getActivity().finish();
 				}
 			});
@@ -525,8 +440,7 @@ public class VpnProfileControlActivity extends AppCompatActivity
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog)
-		{
+		public void onCancel(DialogInterface dialog) {
 			getActivity().finish();
 		}
 	}
@@ -535,12 +449,10 @@ public class VpnProfileControlActivity extends AppCompatActivity
 	 * Class representing an error message which is displayed if VpnService is
 	 * not supported on the current device.
 	 */
-	public static class VpnNotSupportedError extends AppCompatDialogFragment
-	{
+	public static class VpnNotSupportedError extends AppCompatDialogFragment {
 		static final String ERROR_MESSAGE_ID = "com.velitasali.android.vpn.VpnNotSupportedError.MessageId";
 
-		public static void showWithMessage(AppCompatActivity activity, int messageId)
-		{
+		public static void showWithMessage(AppCompatActivity activity, int messageId) {
 			Bundle bundle = new Bundle();
 			bundle.putInt(ERROR_MESSAGE_ID, messageId);
 			VpnNotSupportedError dialog = new VpnNotSupportedError();
@@ -549,27 +461,23 @@ public class VpnProfileControlActivity extends AppCompatActivity
 		}
 
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			final Bundle arguments = getArguments();
 			final int messageId = arguments.getInt(ERROR_MESSAGE_ID);
 			return new AlertDialog.Builder(getActivity())
 				.setTitle(R.string.vpn_not_supported_title)
 				.setMessage(messageId)
 				.setCancelable(false)
-				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-				{
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(DialogInterface dialog, int id)
-					{
+					public void onClick(DialogInterface dialog, int id) {
 						getActivity().finish();
 					}
 				}).create();
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog)
-		{
+		public void onCancel(DialogInterface dialog) {
 			getActivity().finish();
 		}
 	}

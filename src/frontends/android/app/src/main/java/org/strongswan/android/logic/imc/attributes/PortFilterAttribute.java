@@ -17,46 +17,42 @@
 
 package org.strongswan.android.logic.imc.attributes;
 
-import java.util.LinkedList;
-
+import android.util.Pair;
 import org.strongswan.android.logic.imc.collectors.Protocol;
 import org.strongswan.android.utils.BufferedByteWriter;
 
-import android.util.Pair;
+import java.util.LinkedList;
 
 /**
  * PA-TNC Port Filter attribute (see section 4.2.6 of RFC 5792)
- *
- *                       1                   2                   3
- *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |   Reserved  |B|    Protocol   |         Port Number           |
- *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |   Reserved  |B|    Protocol   |         Port Number           |
- *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * <p>
+ * 1                   2                   3
+ * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |   Reserved  |B|    Protocol   |         Port Number           |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |   Reserved  |B|    Protocol   |         Port Number           |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
-public class PortFilterAttribute implements Attribute
-{
+public class PortFilterAttribute implements Attribute {
 	private final LinkedList<Pair<Protocol, Short>> mPorts = new LinkedList<Pair<Protocol, Short>>();
 
 	/**
 	 * Add an open port with the given protocol and port number
+	 *
 	 * @param protocol transport protocol
-	 * @param port port number
+	 * @param port     port number
 	 */
-	public void addPort(Protocol protocol, short port)
-	{
+	public void addPort(Protocol protocol, short port) {
 		mPorts.add(new Pair<Protocol, Short>(protocol, port));
 	}
 
 	@Override
-	public byte[] getEncoding()
-	{
+	public byte[] getEncoding() {
 		BufferedByteWriter writer = new BufferedByteWriter();
-		for (Pair<Protocol, Short> port : mPorts)
-		{
+		for (Pair<Protocol, Short> port : mPorts) {
 			/* we report open ports, so the BLOCKED flag is not set */
-			writer.put((byte)0);
+			writer.put((byte) 0);
 			writer.put(port.first.getValue());
 			writer.put16(port.second);
 		}

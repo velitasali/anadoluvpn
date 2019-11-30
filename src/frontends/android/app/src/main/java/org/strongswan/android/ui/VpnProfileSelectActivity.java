@@ -17,32 +17,26 @@ package org.strongswan.android.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.velitasali.android.vpn.R;
-import org.strongswan.android.data.VpnProfile;
-import org.strongswan.android.ui.VpnProfileListFragment.OnVpnProfileSelectedListener;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
+import com.velitasali.android.vpn.R;
+import org.strongswan.android.data.VpnProfile;
+import org.strongswan.android.ui.VpnProfileListFragment.OnVpnProfileSelectedListener;
 
-public class VpnProfileSelectActivity extends AppCompatActivity implements OnVpnProfileSelectedListener
-{
+public class VpnProfileSelectActivity extends AppCompatActivity implements OnVpnProfileSelectedListener {
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.vpn_profile_select);
 
-		/* we should probably return a result also if the user clicks the back
-		 * button before selecting a profile */
+		// we should probably return a result also if the user clicks the back button before selecting a profile
 		setResult(RESULT_CANCELED);
 	}
 
 	@Override
-	public void onVpnProfileSelected(VpnProfile profile)
-	{
+	public void onVpnProfileSelected(VpnProfile profile) {
 		Intent shortcut = new Intent(VpnProfileControlActivity.START_PROFILE);
 		shortcut.putExtra(VpnProfileControlActivity.EXTRA_VPN_PROFILE_ID, profile.getUUID().toString());
 

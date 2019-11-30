@@ -25,7 +25,11 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
-
+import androidx.fragment.app.ListFragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.app.LoaderManager.LoaderCallbacks;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.logic.TrustedCertificateManager;
 import org.strongswan.android.logic.TrustedCertificateManager.TrustedCertificateSource;
@@ -33,22 +37,10 @@ import org.strongswan.android.security.TrustedCertificateEntry;
 import org.strongswan.android.ui.adapter.TrustedCertificateAdapter;
 
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Observable;
-import java.util.Observer;
 
-import androidx.fragment.app.ListFragment;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.app.LoaderManager.LoaderCallbacks;
-import androidx.loader.content.AsyncTaskLoader;
-import androidx.loader.content.Loader;
-
-public class TrustedCertificateListFragment extends ListFragment implements LoaderCallbacks<List<TrustedCertificateEntry>>, OnQueryTextListener
-{
+public class TrustedCertificateListFragment extends ListFragment implements LoaderCallbacks<List<TrustedCertificateEntry>>, OnQueryTextListener {
 	public static final String EXTRA_CERTIFICATE_SOURCE = "certificate_source";
 	private OnTrustedCertificateSelectedListener mListener;
 	private TrustedCertificateAdapter mAdapter;
@@ -57,14 +49,12 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 	/**
 	 * The activity containing this fragment should implement this interface
 	 */
-	public interface OnTrustedCertificateSelectedListener
-	{
+	public interface OnTrustedCertificateSelectedListener {
 		public void onTrustedCertificateSelected(TrustedCertificateEntry selected);
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
-	{
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
 
@@ -76,34 +66,29 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 		setListShown(false);
 
 		Bundle arguments = getArguments();
-		if (arguments != null)
-		{
-			mSource = (TrustedCertificateSource)arguments.getSerializable(EXTRA_CERTIFICATE_SOURCE);
+		if (arguments != null) {
+			mSource = (TrustedCertificateSource) arguments.getSerializable(EXTRA_CERTIFICATE_SOURCE);
 		}
 
 		LoaderManager.getInstance(this).initLoader(0, null, this);
 	}
 
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 		super.onDestroy();
 	}
 
 	@Override
-	public void onAttach(Context context)
-	{
+	public void onAttach(Context context) {
 		super.onAttach(context);
 
-		if (context instanceof OnTrustedCertificateSelectedListener)
-		{
-			mListener = (OnTrustedCertificateSelectedListener)context;
+		if (context instanceof OnTrustedCertificateSelectedListener) {
+			mListener = (OnTrustedCertificateSelectedListener) context;
 		}
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		MenuItem item = menu.add(R.string.search);
 		item.setIcon(android.R.drawable.ic_menu_search);
 		item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -114,77 +99,63 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 	}
 
 	@Override
-	public boolean onQueryTextSubmit(String query)
-	{	/* already handled when the text changes */
+	public boolean onQueryTextSubmit(String query) {    /* already handled when the text changes */
 		return true;
 	}
 
 	@Override
-	public boolean onQueryTextChange(String newText)
-	{
+	public boolean onQueryTextChange(String newText) {
 		String search = TextUtils.isEmpty(newText) ? null : newText;
 		mAdapter.getFilter().filter(search);
 		return true;
 	}
 
 	@Override
-	public Loader<List<TrustedCertificateEntry>> onCreateLoader(int id, Bundle args)
-	{	/* we don't need the id as we have only one loader */
+	public Loader<List<TrustedCertificateEntry>> onCreateLoader(int id, Bundle args) {    /* we don't need the id as we have only one loader */
 		return new CertificateListLoader(getActivity(), mSource);
 	}
 
 	@Override
-	public void onLoadFinished(Loader<List<TrustedCertificateEntry>> loader, List<TrustedCertificateEntry> data)
-	{
+	public void onLoadFinished(Loader<List<TrustedCertificateEntry>> loader, List<TrustedCertificateEntry> data) {
 		mAdapter.setData(data);
 
-		if (isResumed())
-		{
+		if (isResumed()) {
 			setListShown(true);
-		}
-		else
-		{
+		} else {
 			setListShownNoAnimation(true);
 		}
 	}
 
 	@Override
-	public void onLoaderReset(Loader<List<TrustedCertificateEntry>> loader)
-	{
+	public void onLoaderReset(Loader<List<TrustedCertificateEntry>> loader) {
 		mAdapter.setData(null);
 	}
 
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id)
-	{
-		if (mListener != null)
-		{
+	public void onListItemClick(ListView l, View v, int position, long id) {
+		if (mListener != null) {
 			mListener.onTrustedCertificateSelected(mAdapter.getItem(position));
 		}
 	}
 
-	public static class CertificateListLoader extends AsyncTaskLoader<List<TrustedCertificateEntry>>
-	{
+	public static class CertificateListLoader extends AsyncTaskLoader<List<TrustedCertificateEntry>> {
 		private List<TrustedCertificateEntry> mData;
 		private final TrustedCertificateSource mSource;
 		private TrustedCertificateManagerObserver mObserver;
 
-		public CertificateListLoader(Context context, TrustedCertificateSource source)
-		{
+		public CertificateListLoader(Context context, TrustedCertificateSource source) {
 			super(context);
 			mSource = source;
 		}
 
 		@Override
-		public List<TrustedCertificateEntry> loadInBackground()
-		{
+		public List<TrustedCertificateEntry> loadInBackground() {
 			TrustedCertificateManager certman = TrustedCertificateManager.getInstance().load();
 			Hashtable<String, X509Certificate> certificates = certman.getCACertificates(mSource);
 			List<TrustedCertificateEntry> selected;
 
 			selected = new ArrayList<TrustedCertificateEntry>();
-			for (Entry<String, X509Certificate> entry : certificates.entrySet())
-			{
+			for (Entry<String, X509Certificate> entry : certificates.entrySet()) {
 				selected.add(new TrustedCertificateEntry(entry.getKey(), entry.getValue()));
 			}
 			Collections.sort(selected);
@@ -192,31 +163,24 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 		}
 
 		@Override
-		protected void onStartLoading()
-		{
-			if (mData != null)
-			{	/* if we have data ready, deliver it directly */
+		protected void onStartLoading() {
+			if (mData != null) {    /* if we have data ready, deliver it directly */
 				deliverResult(mData);
 			}
-			if (takeContentChanged() || mData == null)
-			{
+			if (takeContentChanged() || mData == null) {
 				forceLoad();
 			}
 		}
 
 		@Override
-		public void deliverResult(List<TrustedCertificateEntry> data)
-		{
-			if (isReset())
-			{
+		public void deliverResult(List<TrustedCertificateEntry> data) {
+			if (isReset()) {
 				return;
 			}
 			mData = data;
-			if (isStarted())
-			{	/* if it is started we deliver the data directly,
-				 * otherwise this is handled in onStartLoading */
-				if (mObserver == null)
-				{
+			if (isStarted()) {    /* if it is started we deliver the data directly,
+			 * otherwise this is handled in onStartLoading */
+				if (mObserver == null) {
 					mObserver = new TrustedCertificateManagerObserver();
 					TrustedCertificateManager.getInstance().addObserver(mObserver);
 				}
@@ -225,10 +189,8 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 		}
 
 		@Override
-		protected void onReset()
-		{
-			if (mObserver != null)
-			{
+		protected void onReset() {
+			if (mObserver != null) {
 				TrustedCertificateManager.getInstance().deleteObserver(mObserver);
 				mObserver = null;
 			}
@@ -237,22 +199,18 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 		}
 
 		@Override
-		protected void onAbandon()
-		{
-			if (mObserver != null)
-			{
+		protected void onAbandon() {
+			if (mObserver != null) {
 				TrustedCertificateManager.getInstance().deleteObserver(mObserver);
 				mObserver = null;
 			}
 		}
 
-		private class TrustedCertificateManagerObserver implements Observer
-		{
+		private class TrustedCertificateManagerObserver implements Observer {
 			private ForceLoadContentObserver mContentObserver = new ForceLoadContentObserver();
 
 			@Override
-			public void update(Observable observable, Object data)
-			{
+			public void update(Observable observable, Object data) {
 				mContentObserver.onChange(false);
 			}
 		}

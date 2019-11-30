@@ -15,8 +15,7 @@
 
 package org.strongswan.android.utils;
 
-public final class Constants
-{
+public final class Constants {
 	/**
 	 * Intent action used to notify about changes to the VPN profiles
 	 */

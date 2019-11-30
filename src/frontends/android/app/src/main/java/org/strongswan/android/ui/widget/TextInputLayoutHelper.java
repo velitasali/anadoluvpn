@@ -26,14 +26,11 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.google.android.material.textfield.TextInputLayout;
-
-import com.velitasali.android.vpn.R;
-
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.ViewPropertyAnimatorListenerAdapter;
+import com.google.android.material.textfield.TextInputLayout;
+import com.velitasali.android.vpn.R;
 
 /**
  * Layout that extends {@link TextInputLayout} with a helper text
@@ -41,29 +38,24 @@ import androidx.core.view.ViewPropertyAnimatorListenerAdapter;
  * {@link #setError(CharSequence)} is hidden when the text field is changed (this mirrors the
  * behavior of {@link android.widget.EditText}).
  */
-public class TextInputLayoutHelper extends TextInputLayout
-{
+public class TextInputLayoutHelper extends TextInputLayout {
 	private LinearLayout mHelperContainer;
 	private TextView mHelperText;
 
-	public TextInputLayoutHelper(Context context)
-	{
+	public TextInputLayoutHelper(Context context) {
 		this(context, null);
 	}
 
-	public TextInputLayoutHelper(Context context, AttributeSet attrs)
-	{
+	public TextInputLayoutHelper(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
 
-	public TextInputLayoutHelper(Context context, AttributeSet attrs, int defStyleAttr)
-	{
+	public TextInputLayoutHelper(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs);
 		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TextInputLayoutHelper);
 		String helper = a.getString(R.styleable.TextInputLayoutHelper_helper_text);
 		a.recycle();
-		if (helper != null)
-		{
+		if (helper != null) {
 			mHelperContainer = new LinearLayout(context);
 			mHelperContainer.setOrientation(LinearLayout.HORIZONTAL);
 			mHelperContainer.setVisibility(View.INVISIBLE);
@@ -81,55 +73,48 @@ public class TextInputLayoutHelper extends TextInputLayout
 	}
 
 	@Override
-	public void addView(View child, int index, ViewGroup.LayoutParams params)
-	{
+	public void addView(View child, int index, ViewGroup.LayoutParams params) {
 		super.addView(child, index, params);
-		if (child instanceof EditText)
-		{
-			EditText text = (EditText)child;
+		if (child instanceof EditText) {
+			EditText text = (EditText) child;
 			text.addTextChangedListener(new TextWatcher() {
 				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+				}
 
 				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) {}
+				public void onTextChanged(CharSequence s, int start, int before, int count) {
+				}
 
 				@Override
-				public void afterTextChanged(Editable s)
-				{
-					if (getError() != null)
-					{
+				public void afterTextChanged(Editable s) {
+					if (getError() != null) {
 						setError(null);
 					}
 				}
 			});
-			if (mHelperContainer != null)
-			{
+			if (mHelperContainer != null) {
 				text.setOnFocusChangeListener(new OnFocusChangeListener() {
 					@Override
-					public void onFocusChange(View v, boolean hasFocus)
-					{
+					public void onFocusChange(View v, boolean hasFocus) {
 						showHelper(hasFocus);
 					}
 				});
 				ViewCompat.setPaddingRelative(mHelperContainer, ViewCompat.getPaddingStart(text),
-											  0, ViewCompat.getPaddingEnd(text), text.getPaddingBottom());
+					0, ViewCompat.getPaddingEnd(text), text.getPaddingBottom());
 			}
 		}
 	}
 
 	@Override
-	public void setError(@Nullable CharSequence error)
-	{
+	public void setError(@Nullable CharSequence error) {
 		super.setError(error);
-		if (mHelperContainer != null)
-		{
-			if (error == null)
-			{	/* this frees up space used by the now invisible error message */
+		if (mHelperContainer != null) {
+			if (error == null) {
+				// this frees up space used by the now invisible error message
 				setErrorEnabled(false);
-			}
-			else
-			{	/* re-add the helper as the error message should be displayed directly under the textbox */
+			} else {
+				// re-add the helper as the error message should be displayed directly under the textbox
 				removeView(mHelperContainer);
 				addView(mHelperContainer, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 			}
@@ -141,45 +126,36 @@ public class TextInputLayoutHelper extends TextInputLayout
 	 *
 	 * @attr ref R.styleable#TextInputLayoutHelper_helper_text
 	 */
-	public void setHelperText(CharSequence text)
-	{
-		if (mHelperText != null)
-		{
+	public void setHelperText(CharSequence text) {
+		if (mHelperText != null) {
 			mHelperText.setText(text);
 		}
 	}
 
-	private void showHelper(boolean show)
-	{
-		if (show == (mHelperContainer.getVisibility() == View.VISIBLE))
-		{
+	private void showHelper(boolean show) {
+		if (show == (mHelperContainer.getVisibility() == View.VISIBLE)) {
 			return;
 		}
-		if (show)
-		{
+		if (show) {
 			ViewCompat.animate(mHelperContainer)
-					  .alpha(1f)
-					  .setDuration(200)
-					  .setListener(new ViewPropertyAnimatorListenerAdapter() {
-						  @Override
-						  public void onAnimationStart(View view)
-						  {
-							  view.setVisibility(View.VISIBLE);
-						  }
-					  }).start();
-		}
-		else
-		{
+				.alpha(1f)
+				.setDuration(200)
+				.setListener(new ViewPropertyAnimatorListenerAdapter() {
+					@Override
+					public void onAnimationStart(View view) {
+						view.setVisibility(View.VISIBLE);
+					}
+				}).start();
+		} else {
 			ViewCompat.animate(mHelperContainer)
-					  .alpha(0f)
-					  .setDuration(200)
-					  .setListener(new ViewPropertyAnimatorListenerAdapter() {
-						  @Override
-						  public void onAnimationEnd(View view)
-						  {
-							  view.setVisibility(View.INVISIBLE);
-						  }
-					  }).start();
+				.alpha(0f)
+				.setDuration(200)
+				.setListener(new ViewPropertyAnimatorListenerAdapter() {
+					@Override
+					public void onAnimationEnd(View view) {
+						view.setVisibility(View.INVISIBLE);
+					}
+				}).start();
 		}
 	}
 }

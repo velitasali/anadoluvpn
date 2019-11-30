@@ -17,8 +17,7 @@
 
 package org.strongswan.android.logic.imc.attributes;
 
-public enum AttributeType
-{
+public enum AttributeType {
 	/* IETF standard PA-TNC attribute types defined by RFC 5792 */
 	IETF_TESTING(PrivateEnterpriseNumber.IETF, 0),
 	IETF_ATTRIBUTE_REQUEST(PrivateEnterpriseNumber.IETF, 1),
@@ -45,10 +44,9 @@ public enum AttributeType
 	 * Enum type for vendor specific attributes (defined in their namespace)
 	 *
 	 * @param vendor private enterprise number of vendor
-	 * @param type vendor specific attribute type
+	 * @param type   vendor specific attribute type
 	 */
-	private AttributeType(PrivateEnterpriseNumber vendor, int type)
-	{
+	private AttributeType(PrivateEnterpriseNumber vendor, int type) {
 		mVendor = vendor;
 		mType = type;
 	}
@@ -58,8 +56,7 @@ public enum AttributeType
 	 *
 	 * @return PEN
 	 */
-	public PrivateEnterpriseNumber getVendor()
-	{
+	public PrivateEnterpriseNumber getVendor() {
 		return mVendor;
 	}
 
@@ -68,8 +65,7 @@ public enum AttributeType
 	 *
 	 * @return type
 	 */
-	public int getType()
-	{
+	public int getType() {
 		return mType;
 	}
 
@@ -77,21 +73,17 @@ public enum AttributeType
 	 * Get the enum entry from the given numeric values, if defined
 	 *
 	 * @param vendor vendor id
-	 * @param type vendor specific type
+	 * @param type   vendor specific type
 	 * @return enum entry or null
 	 */
-	public static AttributeType fromValues(int vendor, int type)
-	{
+	public static AttributeType fromValues(int vendor, int type) {
 		PrivateEnterpriseNumber pen = PrivateEnterpriseNumber.fromValue(vendor);
 
-		if (pen == null)
-		{
+		if (pen == null) {
 			return null;
 		}
-		for (AttributeType attr : AttributeType.values())
-		{
-			if (attr.mVendor == pen && attr.mType == type)
-			{
+		for (AttributeType attr : AttributeType.values()) {
+			if (attr.mVendor == pen && attr.mType == type) {
 				return attr;
 			}
 		}

@@ -21,23 +21,21 @@ import org.strongswan.android.utils.BufferedByteWriter;
 
 /**
  * PA-TNC Product Information attribute (see section 4.2.2 of RFC 5792)
- *
- *                       1                   2                   3
- *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |               Product Vendor ID               |  Product ID   |
- *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |  Product ID   |         Product Name (Variable Length)        |
- *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * <p>
+ * 1                   2                   3
+ * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |               Product Vendor ID               |  Product ID   |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |  Product ID   |         Product Name (Variable Length)        |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
-public class ProductInformationAttribute implements Attribute
-{
+public class ProductInformationAttribute implements Attribute {
 	private final String PRODUCT_NAME = "Android";
 	private final short PRODUCT_ID = 0;
 
 	@Override
-	public byte[] getEncoding()
-	{
+	public byte[] getEncoding() {
 		BufferedByteWriter writer = new BufferedByteWriter();
 		writer.put24(PrivateEnterpriseNumber.GOOGLE.getValue());
 		writer.put16(PRODUCT_ID);

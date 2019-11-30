@@ -15,17 +15,15 @@
 
 package org.strongswan.android.logic;
 
-import java.security.Security;
-
-import org.strongswan.android.security.LocalCertificateKeyStoreProvider;
-import org.strongswan.android.ui.MainActivity;
-
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
+import org.strongswan.android.security.LocalCertificateKeyStoreProvider;
+import org.strongswan.android.ui.MainActivity;
 
-public class StrongSwanApplication extends Application
-{
+import java.security.Security;
+
+public class StrongSwanApplication extends Application {
 	private static Context mContext;
 
 	static {
@@ -33,18 +31,17 @@ public class StrongSwanApplication extends Application
 	}
 
 	@Override
-	public void onCreate()
-	{
+	public void onCreate() {
 		super.onCreate();
 		StrongSwanApplication.mContext = getApplicationContext();
 	}
 
 	/**
 	 * Returns the current application context
+	 *
 	 * @return context
 	 */
-	public static Context getContext()
-	{
+	public static Context getContext() {
 		return StrongSwanApplication.mContext;
 	}
 
@@ -52,14 +49,11 @@ public class StrongSwanApplication extends Application
 	 * The libraries are extracted to /data/data/org.strongswan.android/...
 	 * during installation.  On newer releases most are loaded in JNI_OnLoad.
 	 */
-	static
-	{
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2)
-		{
+	static {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
 			System.loadLibrary("strongswan");
 
-			if (MainActivity.USE_BYOD)
-			{
+			if (MainActivity.USE_BYOD) {
 				System.loadLibrary("tpmtss");
 				System.loadLibrary("tncif");
 				System.loadLibrary("tnccs");

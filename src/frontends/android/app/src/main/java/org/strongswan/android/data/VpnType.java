@@ -17,8 +17,7 @@ package org.strongswan.android.data;
 
 import java.util.EnumSet;
 
-public enum VpnType
-{
+public enum VpnType {
 	/* the order here must match the items in R.array.vpn_types */
 	IKEV2_EAP("ikev2-eap", EnumSet.of(VpnTypeFeature.USER_PASS)),
 	IKEV2_CERT("ikev2-cert", EnumSet.of(VpnTypeFeature.CERTIFICATE)),
@@ -29,13 +28,18 @@ public enum VpnType
 	/**
 	 * Features of a VPN type.
 	 */
-	public enum VpnTypeFeature
-	{
-		/** client certificate is required */
+	public enum VpnTypeFeature {
+		/**
+		 * client certificate is required
+		 */
 		CERTIFICATE,
-		/** username and password are required */
+		/**
+		 * username and password are required
+		 */
 		USER_PASS,
-		/** enable BYOD features */
+		/**
+		 * enable BYOD features
+		 */
 		BYOD;
 	}
 
@@ -45,22 +49,21 @@ public enum VpnType
 	/**
 	 * Enum which provides additional information about the supported VPN types.
 	 *
-	 * @param id identifier used to store and transmit this specific type
-	 * @param features of the given VPN type
+	 * @param id          identifier used to store and transmit this specific type
+	 * @param features    of the given VPN type
 	 * @param certificate true if a client certificate is required
 	 */
-	VpnType(String id, EnumSet<VpnTypeFeature> features)
-	{
+	VpnType(String id, EnumSet<VpnTypeFeature> features) {
 		mIdentifier = id;
 		mFeatures = features;
 	}
 
 	/**
 	 * The identifier used to store this value in the database
+	 *
 	 * @return identifier
 	 */
-	public String getIdentifier()
-	{
+	public String getIdentifier() {
 		return mIdentifier;
 	}
 
@@ -69,8 +72,7 @@ public enum VpnType
 	 *
 	 * @return true if the feature is supported/required
 	 */
-	public boolean has(VpnTypeFeature feature)
-	{
+	public boolean has(VpnTypeFeature feature) {
 		return mFeatures.contains(feature);
 	}
 
@@ -80,12 +82,9 @@ public enum VpnType
 	 * @param identifier get the enum entry with this identifier
 	 * @return the enum entry, or the default if not found
 	 */
-	public static VpnType fromIdentifier(String identifier)
-	{
-		for (VpnType type : VpnType.values())
-		{
-			if (identifier.equals(type.mIdentifier))
-			{
+	public static VpnType fromIdentifier(String identifier) {
+		for (VpnType type : VpnType.values()) {
+			if (identifier.equals(type.mIdentifier)) {
 				return type;
 			}
 		}

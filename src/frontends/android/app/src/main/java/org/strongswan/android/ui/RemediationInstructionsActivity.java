@@ -16,37 +16,30 @@
 package org.strongswan.android.ui;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.MenuItem;
-
+import androidx.appcompat.app.AppCompatActivity;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.logic.imc.RemediationInstruction;
 import org.strongswan.android.ui.RemediationInstructionsFragment.OnRemediationInstructionSelectedListener;
 
 import java.util.ArrayList;
 
-public class RemediationInstructionsActivity extends AppCompatActivity implements OnRemediationInstructionSelectedListener
-{
+public class RemediationInstructionsActivity extends AppCompatActivity implements OnRemediationInstructionSelectedListener {
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.remediation_instructions);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		if (savedInstanceState != null)
-		{	/* only update if we're not restoring */
+		if (savedInstanceState != null) {    /* only update if we're not restoring */
 			return;
 		}
-		RemediationInstructionsFragment frag = (RemediationInstructionsFragment)getSupportFragmentManager().findFragmentById(R.id.remediation_instructions_fragment);
-		if (frag != null)
-		{	/* two-pane layout, update fragment */
+		RemediationInstructionsFragment frag = (RemediationInstructionsFragment) getSupportFragmentManager().findFragmentById(R.id.remediation_instructions_fragment);
+		if (frag != null) {    /* two-pane layout, update fragment */
 			Bundle extras = getIntent().getExtras();
 			ArrayList<RemediationInstruction> list = extras.getParcelableArrayList(RemediationInstructionsFragment.EXTRA_REMEDIATION_INSTRUCTIONS);
 			frag.updateView(list);
-		}
-		else
-		{	/* one-pane layout, create fragment */
+		} else {    /* one-pane layout, create fragment */
 			frag = new RemediationInstructionsFragment();
 			frag.setArguments(getIntent().getExtras());
 			getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, frag).commit();
@@ -54,14 +47,11 @@ public class RemediationInstructionsActivity extends AppCompatActivity implement
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 			case android.R.id.home:
 				/* one-pane layout, pop possible fragment from stack, finish otherwise */
-				if (!getSupportFragmentManager().popBackStackImmediate())
-				{
+				if (!getSupportFragmentManager().popBackStackImmediate()) {
 					finish();
 				}
 				getSupportActionBar().setTitle(getTitle());
@@ -72,16 +62,12 @@ public class RemediationInstructionsActivity extends AppCompatActivity implement
 	}
 
 	@Override
-	public void onRemediationInstructionSelected(RemediationInstruction instruction)
-	{
-		RemediationInstructionFragment frag = (RemediationInstructionFragment)getSupportFragmentManager().findFragmentById(R.id.remediation_instruction_fragment);
+	public void onRemediationInstructionSelected(RemediationInstruction instruction) {
+		RemediationInstructionFragment frag = (RemediationInstructionFragment) getSupportFragmentManager().findFragmentById(R.id.remediation_instruction_fragment);
 
-		if (frag != null)
-		{	/* two-pane layout, update directly */
+		if (frag != null) {    /* two-pane layout, update directly */
 			frag.updateView(instruction);
-		}
-		else
-		{	/* one-pane layout, replace fragment */
+		} else {    /* one-pane layout, replace fragment */
 			frag = new RemediationInstructionFragment();
 			Bundle args = new Bundle();
 			args.putParcelable(RemediationInstructionFragment.ARG_REMEDIATION_INSTRUCTION, instruction);

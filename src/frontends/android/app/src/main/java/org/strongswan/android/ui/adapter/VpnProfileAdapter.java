@@ -17,29 +17,26 @@
 
 package org.strongswan.android.ui.adapter;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import com.velitasali.android.vpn.R;
-import org.strongswan.android.data.VpnProfile;
-import org.strongswan.android.data.VpnType.VpnTypeFeature;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import com.velitasali.android.vpn.R;
+import org.strongswan.android.data.VpnProfile;
+import org.strongswan.android.data.VpnType.VpnTypeFeature;
 
-public class VpnProfileAdapter extends ArrayAdapter<VpnProfile>
-{
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class VpnProfileAdapter extends ArrayAdapter<VpnProfile> {
 	private final int resource;
 	private final List<VpnProfile> items;
 
 	public VpnProfileAdapter(Context context, int resource,
-							 List<VpnProfile> items)
-	{
+							 List<VpnProfile> items) {
 		super(context, resource, items);
 		this.resource = resource;
 		this.items = items;
@@ -47,65 +44,51 @@ public class VpnProfileAdapter extends ArrayAdapter<VpnProfile>
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		View vpnProfileView;
-		if (convertView != null)
-		{
+		if (convertView != null) {
 			vpnProfileView = convertView;
-		}
-		else
-		{
+		} else {
 			LayoutInflater inflater = LayoutInflater.from(getContext());
 			vpnProfileView = inflater.inflate(resource, null);
 		}
 		VpnProfile profile = getItem(position);
-		TextView tv = (TextView)vpnProfileView.findViewById(R.id.profile_item_name);
+		TextView tv = (TextView) vpnProfileView.findViewById(R.id.profile_item_name);
 		tv.setText(profile.getName());
-		tv = (TextView)vpnProfileView.findViewById(R.id.profile_item_gateway);
+		tv = (TextView) vpnProfileView.findViewById(R.id.profile_item_gateway);
 		tv.setText(getContext().getString(R.string.profile_gateway_label) + ": " + profile.getGateway());
-		tv = (TextView)vpnProfileView.findViewById(R.id.profile_item_username);
-		if (profile.getVpnType().has(VpnTypeFeature.USER_PASS))
-		{	/* if the view is reused we make sure it is visible */
+		tv = (TextView) vpnProfileView.findViewById(R.id.profile_item_username);
+		if (profile.getVpnType().has(VpnTypeFeature.USER_PASS)) {
+			// if the view is reused we make sure it is visible
 			tv.setVisibility(View.VISIBLE);
 			tv.setText(getContext().getString(R.string.profile_username_label) + ": " + profile.getUsername());
-		}
-		else if (profile.getVpnType().has(VpnTypeFeature.CERTIFICATE) &&
-				 profile.getLocalId() != null)
-		{
+		} else if (profile.getVpnType().has(VpnTypeFeature.CERTIFICATE) &&
+			profile.getLocalId() != null) {
 			tv.setVisibility(View.VISIBLE);
 			tv.setText(getContext().getString(R.string.profile_user_select_id_label) + ": " + profile.getLocalId());
-		}
-		else
-		{
+		} else {
 			tv.setVisibility(View.GONE);
 		}
-		tv = (TextView)vpnProfileView.findViewById(R.id.profile_item_certificate);
-		if (profile.getVpnType().has(VpnTypeFeature.CERTIFICATE))
-		{
+		tv = (TextView) vpnProfileView.findViewById(R.id.profile_item_certificate);
+		if (profile.getVpnType().has(VpnTypeFeature.CERTIFICATE)) {
 			tv.setText(getContext().getString(R.string.profile_user_certificate_label) + ": " + profile.getUserCertificateAlias());
 			tv.setVisibility(View.VISIBLE);
-		}
-		else
-		{
+		} else {
 			tv.setVisibility(View.GONE);
 		}
 		return vpnProfileView;
 	}
 
 	@Override
-	public void notifyDataSetChanged()
-	{
+	public void notifyDataSetChanged() {
 		sortItems();
 		super.notifyDataSetChanged();
 	}
 
-	private void sortItems()
-	{
+	private void sortItems() {
 		Collections.sort(this.items, new Comparator<VpnProfile>() {
 			@Override
-			public int compare(VpnProfile lhs, VpnProfile rhs)
-			{
+			public int compare(VpnProfile lhs, VpnProfile rhs) {
 				return lhs.getName().compareToIgnoreCase(rhs.getName());
 			}
 		});

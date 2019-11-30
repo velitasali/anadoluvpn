@@ -18,55 +18,46 @@ package org.strongswan.android.ui.adapter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import androidx.annotation.NonNull;
 
 import java.text.Collator;
 
-import androidx.annotation.NonNull;
-
-public class SelectedApplicationEntry implements Comparable<SelectedApplicationEntry>
-{
+public class SelectedApplicationEntry implements Comparable<SelectedApplicationEntry> {
 	private final ApplicationInfo mInfo;
 	private final Drawable mIcon;
 	private final String mName;
 	private boolean mSelected;
 
-	public SelectedApplicationEntry(PackageManager packageManager, ApplicationInfo info)
-	{
+	public SelectedApplicationEntry(PackageManager packageManager, ApplicationInfo info) {
 		mInfo = info;
 		CharSequence name = info.loadLabel(packageManager);
 		mName = name == null ? info.packageName : name.toString();
 		mIcon = info.loadIcon(packageManager);
 	}
 
-	public void setSelected(boolean selected)
-	{
+	public void setSelected(boolean selected) {
 		mSelected = selected;
 	}
 
-	public boolean isSelected()
-	{
+	public boolean isSelected() {
 		return mSelected;
 	}
 
-	public ApplicationInfo getInfo()
-	{
+	public ApplicationInfo getInfo() {
 		return mInfo;
 	}
 
-	public Drawable getIcon()
-	{
+	public Drawable getIcon() {
 		return mIcon;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return mName;
 	}
 
 	@Override
-	public int compareTo(@NonNull SelectedApplicationEntry another)
-	{
+	public int compareTo(@NonNull SelectedApplicationEntry another) {
 		return Collator.getInstance().compare(toString(), another.toString());
 	}
 }

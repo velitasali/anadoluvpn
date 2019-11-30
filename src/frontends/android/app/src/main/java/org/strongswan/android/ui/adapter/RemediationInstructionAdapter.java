@@ -15,22 +15,19 @@
 
 package org.strongswan.android.ui.adapter;
 
-import java.util.List;
-
-import com.velitasali.android.vpn.R;
-import org.strongswan.android.logic.imc.RemediationInstruction;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import com.velitasali.android.vpn.R;
+import org.strongswan.android.logic.imc.RemediationInstruction;
 
-public class RemediationInstructionAdapter extends ArrayAdapter<RemediationInstruction>
-{
-	public RemediationInstructionAdapter(Context context)
-	{
+import java.util.List;
+
+public class RemediationInstructionAdapter extends ArrayAdapter<RemediationInstruction> {
+	public RemediationInstructionAdapter(Context context) {
 		super(context, 0);
 	}
 
@@ -39,32 +36,26 @@ public class RemediationInstructionAdapter extends ArrayAdapter<RemediationInstr
 	 *
 	 * @param data the new data (null to clear)
 	 */
-	public void setData(List<RemediationInstruction> data)
-	{
+	public void setData(List<RemediationInstruction> data) {
 		clear();
-		if (data != null)
-		{
+		if (data != null) {
 			addAll(data);
 		}
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		View view;
-		if (convertView != null)
-		{
+		if (convertView != null) {
 			view = convertView;
-		}
-		else
-		{
+		} else {
 			LayoutInflater inflater = LayoutInflater.from(getContext());
 			view = inflater.inflate(R.layout.remediation_instruction_item, parent, false);
 		}
 		RemediationInstruction item = getItem(position);
-		TextView text = (TextView)view.findViewById(android.R.id.text1);
+		TextView text = (TextView) view.findViewById(android.R.id.text1);
 		text.setText(item.getTitle());
-		text = (TextView)view.findViewById(android.R.id.text2);
+		text = (TextView) view.findViewById(android.R.id.text2);
 		text.setText(item.getDescription());
 		return view;
 	}

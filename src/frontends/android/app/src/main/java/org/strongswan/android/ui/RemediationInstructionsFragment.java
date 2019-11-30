@@ -19,17 +19,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
-
+import androidx.fragment.app.ListFragment;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.logic.imc.RemediationInstruction;
 import org.strongswan.android.ui.adapter.RemediationInstructionAdapter;
 
 import java.util.ArrayList;
 
-import androidx.fragment.app.ListFragment;
-
-public class RemediationInstructionsFragment extends ListFragment
-{
+public class RemediationInstructionsFragment extends ListFragment {
 	public static final String EXTRA_REMEDIATION_INSTRUCTIONS = "instructions";
 	private static final String KEY_POSITION = "position";
 	private ArrayList<RemediationInstruction> mInstructions = null;
@@ -40,62 +37,52 @@ public class RemediationInstructionsFragment extends ListFragment
 	/**
 	 * The activity containing this fragment should implement this interface
 	 */
-	public interface OnRemediationInstructionSelectedListener
-	{
+	public interface OnRemediationInstructionSelectedListener {
 		public void onRemediationInstructionSelected(RemediationInstruction instruction);
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
-	{
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		if (savedInstanceState != null)
-		{
+		if (savedInstanceState != null) {
 			mInstructions = savedInstanceState.getParcelableArrayList(EXTRA_REMEDIATION_INSTRUCTIONS);
 			mCurrentPosition = savedInstanceState.getInt(KEY_POSITION);
 		}
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState)
-	{
+	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putParcelableArrayList(RemediationInstructionsFragment.EXTRA_REMEDIATION_INSTRUCTIONS, mInstructions);
 		outState.putInt(KEY_POSITION, mCurrentPosition);
 	}
 
 	@Override
-	public void onAttach(Context context)
-	{
+	public void onAttach(Context context) {
 		super.onAttach(context);
 
-		if (context instanceof OnRemediationInstructionSelectedListener)
-		{
-			mListener = (OnRemediationInstructionSelectedListener)context;
+		if (context instanceof OnRemediationInstructionSelectedListener) {
+			mListener = (OnRemediationInstructionSelectedListener) context;
 		}
 	}
 
 	@Override
-	public void onStart()
-	{
+	public void onStart() {
 		super.onStart();
 
 		boolean two_pane = getFragmentManager().findFragmentById(R.id.remediation_instruction_fragment) != null;
-		if (two_pane)
-		{	/* two-pane layout, make list items selectable */
+		if (two_pane) {    /* two-pane layout, make list items selectable */
 			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		}
 
 		Bundle args = getArguments();
-		if (mInstructions == null && args != null)
-		{
+		if (mInstructions == null && args != null) {
 			mInstructions = args.getParcelableArrayList(EXTRA_REMEDIATION_INSTRUCTIONS);
 		}
 		updateView(mInstructions);
 
-		if (two_pane && mCurrentPosition == -1 && mInstructions.size() > 0)
-		{	/* two-pane layout, select first instruction */
+		if (two_pane && mCurrentPosition == -1 && mInstructions.size() > 0) {    /* two-pane layout, select first instruction */
 			mCurrentPosition = 0;
 			mListener.onRemediationInstructionSelected(mInstructions.get(0));
 		}
@@ -103,17 +90,14 @@ public class RemediationInstructionsFragment extends ListFragment
 	}
 
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id)
-	{
+	public void onListItemClick(ListView l, View v, int position, long id) {
 		mCurrentPosition = position;
 		mListener.onRemediationInstructionSelected(mInstructions.get(position));
 		getListView().setItemChecked(position, true);
 	}
 
-	public void updateView(ArrayList<RemediationInstruction> instructions)
-	{
-		if (mAdapter == null)
-		{
+	public void updateView(ArrayList<RemediationInstruction> instructions) {
+		if (mAdapter == null) {
 			mAdapter = new RemediationInstructionAdapter(getActivity());
 			setListAdapter(mAdapter);
 		}

@@ -24,20 +24,17 @@ import android.net.NetworkInfo;
 
 import java.util.LinkedList;
 
-public class NetworkManager extends BroadcastReceiver implements Runnable
-{
+public class NetworkManager extends BroadcastReceiver implements Runnable {
 	private final Context mContext;
 	private volatile boolean mRegistered;
 	private Thread mEventNotifier;
 	private LinkedList<Boolean> mEvents = new LinkedList<>();
 
-	public NetworkManager(Context context)
-	{
+	public NetworkManager(Context context) {
 		mContext = context;
 	}
 
-	public void Register()
-	{
+	public void Register() {
 		mEvents.clear();
 		mRegistered = true;
 		mEventNotifier = new Thread(this);
@@ -45,73 +42,56 @@ public class NetworkManager extends BroadcastReceiver implements Runnable
 		mContext.registerReceiver(this, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 	}
 
-	public void Unregister()
-	{
+	public void Unregister() {
 		mContext.unregisterReceiver(this);
 		mRegistered = false;
-		synchronized (this)
-		{
+		synchronized (this) {
 			notifyAll();
 		}
-		try
-		{
+		try {
 			mEventNotifier.join();
 			mEventNotifier = null;
-		}
-		catch (InterruptedException e)
-		{
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public boolean isConnected()
-	{
-		ConnectivityManager cm = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+	public boolean isConnected() {
+		ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo info = null;
-		if (cm != null)
-		{
+		if (cm != null) {
 			info = cm.getActiveNetworkInfo();
 		}
 		return info != null && info.isConnected();
 	}
 
 	@Override
-	public void onReceive(Context context, Intent intent)
-	{
-		synchronized (this)
-		{
+	public void onReceive(Context context, Intent intent) {
+		synchronized (this) {
 			mEvents.addLast(isConnected());
 			notifyAll();
 		}
 	}
 
 	@Override
-	public void run()
-	{
-		while (mRegistered)
-		{
+	public void run() {
+		while (mRegistered) {
 			boolean connected;
 
-			synchronized (this)
-			{
-				try
-				{
-					while (mRegistered && mEvents.isEmpty())
-					{
+			synchronized (this) {
+				try {
+					while (mRegistered && mEvents.isEmpty()) {
 						wait();
 					}
-				}
-				catch (InterruptedException ex)
-				{
+				} catch (InterruptedException ex) {
 					break;
 				}
-				if (!mRegistered)
-				{
+				if (!mRegistered) {
 					break;
 				}
 				connected = mEvents.removeFirst();
 			}
-			/* call the native parts without holding the lock */
+			// call the native parts without holding the lock
 			networkChanged(!connected);
 		}
 	}

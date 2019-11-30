@@ -24,22 +24,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.logic.CharonVpnService;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
-public class LogFragment extends Fragment
-{
+public class LogFragment extends Fragment {
 	private static String SCROLL_POSITION = "SCROLL_POSITION";
 	private String mLogFilePath;
 	private Handler mLogHandler;
@@ -49,8 +42,7 @@ public class LogFragment extends Fragment
 	private int mScrollPosition;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		mLogFilePath = getActivity().getFilesDir() + File.separator + CharonVpnService.LOG_FILE;
@@ -61,8 +53,7 @@ public class LogFragment extends Fragment
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.log_fragment, null);
 
 		mLogAdapter = new LogAdapter(getActivity());
@@ -70,70 +61,56 @@ public class LogFragment extends Fragment
 		mLog.setAdapter(mLogAdapter);
 
 		mScrollPosition = -1;
-		if (savedInstanceState != null)
-		{
+		if (savedInstanceState != null) {
 			mScrollPosition = savedInstanceState.getInt(SCROLL_POSITION, mScrollPosition);
 		}
 		return view;
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState)
-	{
+	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 
-		if (mLog.getLastVisiblePosition() == (mLogAdapter.getCount() - 1))
-		{
+		if (mLog.getLastVisiblePosition() == (mLogAdapter.getCount() - 1)) {
 			outState.putInt(SCROLL_POSITION, -1);
-		}
-		else
-		{
+		} else {
 			outState.putInt(SCROLL_POSITION, mLog.getFirstVisiblePosition());
 		}
 	}
 
 	@Override
-	public void onStart()
-	{
+	public void onStart() {
 		super.onStart();
 		mLogAdapter.restart();
 		mDirectoryObserver.startWatching();
 	}
 
 	@Override
-	public void onStop()
-	{
+	public void onStop() {
 		super.onStop();
 		mDirectoryObserver.stopWatching();
 		mLogAdapter.stop();
 	}
 
-	private class LogAdapter extends ArrayAdapter<String> implements Runnable
-	{
+	private class LogAdapter extends ArrayAdapter<String> implements Runnable {
 		private BufferedReader mReader;
 		private Thread mThread;
 		private volatile boolean mRunning;
 
-		public LogAdapter(@NonNull Context context)
-		{
+		public LogAdapter(@NonNull Context context) {
 			super(context, R.layout.log_list_item, R.id.log_line);
 		}
 
-		public void restart()
-		{
-			if (mRunning)
-			{
+		public void restart() {
+			if (mRunning) {
 				stop();
 			}
 
 			clear();
 
-			try
-			{
+			try {
 				mReader = new BufferedReader(new FileReader(mLogFilePath));
-			}
-			catch (FileNotFoundException e)
-			{
+			} catch (FileNotFoundException e) {
 				mReader = new BufferedReader(new StringReader(""));
 			}
 			mRunning = true;
@@ -141,76 +118,60 @@ public class LogFragment extends Fragment
 			mThread.start();
 		}
 
-		public void stop()
-		{
-			try
-			{
+		public void stop() {
+			try {
 				mRunning = false;
 				mThread.interrupt();
 				mThread.join();
-			}
-			catch (InterruptedException e)
-			{
+			} catch (InterruptedException e) {
 			}
 		}
 
-		private void logLines(final ArrayList<String> lines)
-		{
+		private void logLines(final ArrayList<String> lines) {
 			mLogHandler.post(() -> {
 				boolean scroll = getCount() == 0;
 				setNotifyOnChange(false);
-				for (String line : lines)
-				{
-					if (getResources().getConfiguration().screenWidthDp < 600)
-					{	/* strip off prefix (month=3, day=2, time=8, thread=2, spaces=3) */
+				for (String line : lines) {
+					if (getResources().getConfiguration().screenWidthDp < 600) {
+						// strip off prefix (month=3, day=2, time=8, thread=2, spaces=3)
 						line = line.length() > 18 ? line.substring(18) : line;
 					}
 					add(line);
 				}
 				notifyDataSetChanged();
-				if (scroll)
-				{	/* scroll to the bottom or saved position after adding the first batch */
+				if (scroll) {
+					// scroll to the bottom or saved position after adding the first batch
 					mLogHandler.post(() -> mLog.setSelection(mScrollPosition == -1 ? getCount() - 1 : mScrollPosition));
 				}
 			});
 		}
 
 		@Override
-		public void run()
-		{
+		public void run() {
 			ArrayList<String> lines = null;
 
-			while (mRunning)
-			{
-				try
-				{	/* this works as long as the file is not truncated */
+			while (mRunning) {
+				try {
+					// this works as long as the file is not truncated
 					String line = mReader.readLine();
-					if (line == null)
-					{
-						if (lines != null)
-						{
+					if (line == null) {
+						if (lines != null) {
 							logLines(lines);
 							lines = null;
 						}
-						/* wait until there is more to log */
+						// wait until there is more to log
 						Thread.sleep(1000);
-					}
-					else
-					{
-						if (lines == null)
-						{
+					} else {
+						if (lines == null) {
 							lines = new ArrayList<>();
 						}
 						lines.add(line);
 					}
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					break;
 				}
 			}
-			if (lines != null)
-			{
+			if (lines != null) {
 				logLines(lines);
 			}
 		}
@@ -221,37 +182,32 @@ public class LogFragment extends Fragment
 	 * truncates it (for which there is no explicit event) we check for any modification
 	 * to the file, keep track of the file size and reopen it if it got smaller.
 	 */
-	private class LogDirectoryObserver extends FileObserver
-	{
+	private class LogDirectoryObserver extends FileObserver {
 		private final File mFile;
 		private long mSize;
 
-		public LogDirectoryObserver(String path)
-		{
+		public LogDirectoryObserver(String path) {
 			super(path, FileObserver.CREATE | FileObserver.MODIFY | FileObserver.DELETE);
 			mFile = new File(mLogFilePath);
 			mSize = mFile.length();
 		}
 
 		@Override
-		public void onEvent(int event, String path)
-		{
-			if (path == null || !path.equals(CharonVpnService.LOG_FILE))
-			{
+		public void onEvent(int event, String path) {
+			if (path == null || !path.equals(CharonVpnService.LOG_FILE)) {
 				return;
 			}
-			switch (event)
-			{	/* even though we only subscribed for these we check them,
-				 * as strange events are sometimes received */
+			switch (event) {
+				// even though we only subscribed for these we check them,
+				// as strange events are sometimes received
 				case FileObserver.CREATE:
 				case FileObserver.DELETE:
 					restartLogReader();
 					break;
 				case FileObserver.MODIFY:
-					/* if the size got smaller reopen the log file, as it was probably truncated */
+					// if the size got smaller reopen the log file, as it was probably truncated
 					long size = mFile.length();
-					if (size < mSize)
-					{
+					if (size < mSize) {
 						restartLogReader();
 					}
 					mSize = size;
@@ -259,16 +215,9 @@ public class LogFragment extends Fragment
 			}
 		}
 
-		private void restartLogReader()
-		{
-			/* we are called from a separate thread, so we use the handler */
-			mLogHandler.post(new Runnable() {
-				@Override
-				public void run()
-				{
-					mLogAdapter.restart();
-				}
-			});
+		private void restartLogReader() {
+			// we are called from a separate thread, so we use the handler
+			mLogHandler.post(() -> mLogAdapter.restart());
 		}
 	}
 }

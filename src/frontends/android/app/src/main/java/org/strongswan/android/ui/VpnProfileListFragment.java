@@ -24,36 +24,23 @@ import android.content.IntentFilter;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.util.AttributeSet;
-import android.view.ActionMode;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
-
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.ui.adapter.VpnProfileAdapter;
 import org.strongswan.android.utils.Constants;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-public class VpnProfileListFragment extends Fragment
-{
+public class VpnProfileListFragment extends Fragment {
 	private static final String SELECTED_KEY = "SELECTED";
 	private static final int ADD_REQUEST = 1;
 	private static final int EDIT_REQUEST = 2;
@@ -66,32 +53,24 @@ public class VpnProfileListFragment extends Fragment
 	private HashSet<Integer> mSelected;
 	private boolean mReadOnly;
 
-	private BroadcastReceiver mProfilesChanged = new BroadcastReceiver()
-	{
+	private BroadcastReceiver mProfilesChanged = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent)
-		{
+		public void onReceive(Context context, Intent intent) {
 			long id, ids[];
-			if ((id = intent.getLongExtra(Constants.VPN_PROFILES_SINGLE, 0)) > 0)
-			{
+			if ((id = intent.getLongExtra(Constants.VPN_PROFILES_SINGLE, 0)) > 0) {
 				VpnProfile profile = mDataSource.getVpnProfile(id);
-				if (profile != null)
-				{	/* in case this was an edit, we remove it first */
+				if (profile != null) {
+					// in case this was an edit, we remove it first
 					mVpnProfiles.remove(profile);
 					mVpnProfiles.add(profile);
 					mListAdapter.notifyDataSetChanged();
 				}
-			}
-			else if ((ids = intent.getLongArrayExtra(Constants.VPN_PROFILES_MULTIPLE)) != null)
-			{
-				for (long i : ids)
-				{
+			} else if ((ids = intent.getLongArrayExtra(Constants.VPN_PROFILES_MULTIPLE)) != null) {
+				for (long i : ids) {
 					Iterator<VpnProfile> profiles = mVpnProfiles.iterator();
-					while (profiles.hasNext())
-					{
+					while (profiles.hasNext()) {
 						VpnProfile profile = profiles.next();
-						if (profile.getId() == i)
-						{
+						if (profile.getId() == i) {
 							profiles.remove();
 							break;
 						}
@@ -110,8 +89,7 @@ public class VpnProfileListFragment extends Fragment
 	}
 
 	@Override
-	public void onInflate(Context context, AttributeSet attrs, Bundle savedInstanceState)
-	{
+	public void onInflate(Context context, AttributeSet attrs, Bundle savedInstanceState) {
 		super.onInflate(context, attrs, savedInstanceState);
 		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.Fragment);
 		mReadOnly = a.getBoolean(R.styleable.Fragment_read_only, false);
@@ -120,8 +98,7 @@ public class VpnProfileListFragment extends Fragment
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-							 Bundle savedInstanceState)
-	{
+							 Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.profile_list_fragment, null);
 
 		mListView = view.findViewById(R.id.profile_list);
@@ -129,8 +106,7 @@ public class VpnProfileListFragment extends Fragment
 		mListView.setEmptyView(view.findViewById(R.id.profile_list_empty));
 		mListView.setOnItemClickListener(mVpnProfileClicked);
 
-		if (!mReadOnly)
-		{
+		if (!mReadOnly) {
 			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
 			mListView.setMultiChoiceModeListener(mVpnProfileSelected);
 		}
@@ -138,23 +114,19 @@ public class VpnProfileListFragment extends Fragment
 	}
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		Bundle args = getArguments();
-		if (args != null)
-		{
+		if (args != null) {
 			mReadOnly = args.getBoolean("read_only", mReadOnly);
 		}
 
-		if (!mReadOnly)
-		{
+		if (!mReadOnly) {
 			setHasOptionsMenu(true);
 
 			ArrayList<Integer> selected = null;
-			if (savedInstanceState != null)
-			{
+			if (savedInstanceState != null) {
 				selected = savedInstanceState.getIntegerArrayList(SELECTED_KEY);
 			}
 			mSelected = selected != null ? new HashSet<>(selected) : new HashSet<>();
@@ -163,7 +135,7 @@ public class VpnProfileListFragment extends Fragment
 		mDataSource = new VpnProfileDataSource(this.getActivity());
 		mDataSource.open();
 
-		/* cached list of profiles used as backend for the ListView */
+		// cached list of profiles used as backend for the ListView
 		mVpnProfiles = mDataSource.getAllVpnProfiles();
 
 		mListAdapter = new VpnProfileAdapter(getActivity(), R.layout.profile_list_item, mVpnProfiles);
@@ -173,45 +145,38 @@ public class VpnProfileListFragment extends Fragment
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState)
-	{
+	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putIntegerArrayList(SELECTED_KEY, new ArrayList<>(mSelected));
 	}
 
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 		super.onDestroy();
 		mDataSource.close();
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mProfilesChanged);
 	}
 
 	@Override
-	public void onAttach(Context context)
-	{
+	public void onAttach(Context context) {
 		super.onAttach(context);
 
-		if (context instanceof OnVpnProfileSelectedListener)
-		{
-			mListener = (OnVpnProfileSelectedListener)context;
+		if (context instanceof OnVpnProfileSelectedListener) {
+			mListener = (OnVpnProfileSelectedListener) context;
 		}
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.profile_list, menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 			case R.id.add_profile:
 				Intent connectionIntent = new Intent(getActivity(),
-													 VpnProfileDetailActivity.class);
+					VpnProfileDetailActivity.class);
 				startActivityForResult(connectionIntent, ADD_REQUEST);
 				return true;
 			default:
@@ -221,11 +186,9 @@ public class VpnProfileListFragment extends Fragment
 
 	private final OnItemClickListener mVpnProfileClicked = new OnItemClickListener() {
 		@Override
-		public void onItemClick(AdapterView<?> a, View v, int position, long id)
-		{
-			if (mListener != null)
-			{
-				mListener.onVpnProfileSelected((VpnProfile)a.getItemAtPosition(position));
+		public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+			if (mListener != null) {
+				mListener.onVpnProfileSelected((VpnProfile) a.getItemAtPosition(position));
 			}
 		}
 	};
@@ -235,22 +198,19 @@ public class VpnProfileListFragment extends Fragment
 		private MenuItem mCopyProfile;
 
 		@Override
-		public boolean onPrepareActionMode(ActionMode mode, Menu menu)
-		{
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
 			mEditProfile.setEnabled(mSelected.size() == 1);
 			mCopyProfile.setEnabled(mEditProfile.isEnabled());
 			return true;
 		}
 
 		@Override
-		public void onDestroyActionMode(ActionMode mode)
-		{
+		public void onDestroyActionMode(ActionMode mode) {
 			mSelected.clear();
 		}
 
 		@Override
-		public boolean onCreateActionMode(ActionMode mode, Menu menu)
-		{
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.profile_list_context, menu);
 			mEditProfile = menu.findItem(R.id.edit_profile);
@@ -260,23 +220,19 @@ public class VpnProfileListFragment extends Fragment
 		}
 
 		@Override
-		public boolean onActionItemClicked(ActionMode mode, MenuItem item)
-		{
-			switch (item.getItemId())
-			{
-				case R.id.edit_profile:
-				{
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			switch (item.getItemId()) {
+				case R.id.edit_profile: {
 					int position = mSelected.iterator().next();
-					VpnProfile profile = (VpnProfile)mListView.getItemAtPosition(position);
+					VpnProfile profile = (VpnProfile) mListView.getItemAtPosition(position);
 					Intent connectionIntent = new Intent(getActivity(), VpnProfileDetailActivity.class);
 					connectionIntent.putExtra(VpnProfileDataSource.KEY_ID, profile.getId());
 					startActivityForResult(connectionIntent, EDIT_REQUEST);
 					break;
 				}
-				case R.id.copy_profile:
-				{
+				case R.id.copy_profile: {
 					int position = mSelected.iterator().next();
-					VpnProfile profile = (VpnProfile)mListView.getItemAtPosition(position);
+					VpnProfile profile = (VpnProfile) mListView.getItemAtPosition(position);
 					profile = profile.clone();
 					profile.setUUID(UUID.randomUUID());
 					profile.setName(String.format(getString(R.string.copied_name), profile.getName()));
@@ -291,16 +247,13 @@ public class VpnProfileListFragment extends Fragment
 					startActivityForResult(connectionIntent, EDIT_REQUEST);
 					break;
 				}
-				case R.id.delete_profile:
-				{
+				case R.id.delete_profile: {
 					ArrayList<VpnProfile> profiles = new ArrayList<>();
-					for (int position : mSelected)
-					{
-						profiles.add((VpnProfile)mListView.getItemAtPosition(position));
+					for (int position : mSelected) {
+						profiles.add((VpnProfile) mListView.getItemAtPosition(position));
 					}
 					long ids[] = new long[profiles.size()];
-					for (int i = 0; i < profiles.size(); i++)
-					{
+					for (int i = 0; i < profiles.size(); i++) {
 						VpnProfile profile = profiles.get(i);
 						ids[i] = profile.getId();
 						mDataSource.deleteVpnProfile(profile);
@@ -309,7 +262,7 @@ public class VpnProfileListFragment extends Fragment
 					intent.putExtra(Constants.VPN_PROFILES_MULTIPLE, ids);
 					LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
 					Toast.makeText(VpnProfileListFragment.this.getActivity(),
-								   R.string.profiles_deleted, Toast.LENGTH_SHORT).show();
+						R.string.profiles_deleted, Toast.LENGTH_SHORT).show();
 					break;
 				}
 				default:
@@ -321,19 +274,14 @@ public class VpnProfileListFragment extends Fragment
 
 		@Override
 		public void onItemCheckedStateChanged(ActionMode mode, int position,
-											  long id, boolean checked)
-		{
-			if (checked)
-			{
+											  long id, boolean checked) {
+			if (checked) {
 				mSelected.add(position);
-			}
-			else
-			{
+			} else {
 				mSelected.remove(position);
 			}
 			final int checkedCount = mSelected.size();
-			switch (checkedCount)
-			{
+			switch (checkedCount) {
 				case 0:
 					mode.setSubtitle(R.string.no_profile_selected);
 					break;

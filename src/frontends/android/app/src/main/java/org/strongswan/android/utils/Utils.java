@@ -19,8 +19,7 @@ package org.strongswan.android.utils;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class Utils
-{
+public class Utils {
 	static final char[] HEXDIGITS = "0123456789abcdef".toCharArray();
 
 	/**
@@ -29,14 +28,12 @@ public class Utils
 	 * @param bytes byte array to convert
 	 * @return hex string
 	 */
-	public static String bytesToHex(byte[] bytes)
-	{
+	public static String bytesToHex(byte[] bytes) {
 		char[] hex = new char[bytes.length * 2];
-		for (int i = 0; i < bytes.length; i++)
-		{
+		for (int i = 0; i < bytes.length; i++) {
 			int value = bytes[i];
-			hex[i*2]   = HEXDIGITS[(value & 0xf0) >> 4];
-			hex[i*2+1] = HEXDIGITS[ value & 0x0f];
+			hex[i * 2] = HEXDIGITS[(value & 0xf0) >> 4];
+			hex[i * 2 + 1] = HEXDIGITS[value & 0x0f];
 		}
 		return new String(hex);
 	}
@@ -44,7 +41,7 @@ public class Utils
 	/**
 	 * Validate the given proposal string
 	 *
-	 * @param ike true for IKE, false for ESP
+	 * @param ike      true for IKE, false for ESP
 	 * @param proposal proposal string
 	 * @return true if valid
 	 */
@@ -65,11 +62,9 @@ public class Utils
 	 * @return address if valid
 	 * @throws UnknownHostException if address is invalid
 	 */
-	public static InetAddress parseInetAddress(String address) throws UnknownHostException
-	{
+	public static InetAddress parseInetAddress(String address) throws UnknownHostException {
 		byte[] bytes = parseInetAddressBytes(address);
-		if (bytes == null)
-		{
+		if (bytes == null) {
 			throw new UnknownHostException();
 		}
 		return InetAddress.getByAddress(bytes);

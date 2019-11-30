@@ -18,121 +18,98 @@ package org.strongswan.android.security;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.Key;
-import java.security.KeyStoreException;
-import java.security.KeyStoreSpi;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 
-public class LocalCertificateKeyStoreSpi extends KeyStoreSpi
-{
+public class LocalCertificateKeyStoreSpi extends KeyStoreSpi {
 	private final LocalCertificateStore mStore = new LocalCertificateStore();
 
 	@Override
-	public Key engineGetKey(String alias, char[] password) throws NoSuchAlgorithmException, UnrecoverableKeyException
-	{
+	public Key engineGetKey(String alias, char[] password) throws NoSuchAlgorithmException, UnrecoverableKeyException {
 		return null;
 	}
 
 	@Override
-	public Certificate[] engineGetCertificateChain(String alias)
-	{
+	public Certificate[] engineGetCertificateChain(String alias) {
 		return null;
 	}
 
 	@Override
-	public Certificate engineGetCertificate(String alias)
-	{
+	public Certificate engineGetCertificate(String alias) {
 		return mStore.getCertificate(alias);
 	}
 
 	@Override
-	public Date engineGetCreationDate(String alias)
-	{
+	public Date engineGetCreationDate(String alias) {
 		return mStore.getCreationDate(alias);
 	}
 
 	@Override
-	public void engineSetKeyEntry(String alias, Key key, char[] password, Certificate[] chain) throws KeyStoreException
-	{
+	public void engineSetKeyEntry(String alias, Key key, char[] password, Certificate[] chain) throws KeyStoreException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void engineSetKeyEntry(String alias, byte[] key, Certificate[] chain) throws KeyStoreException
-	{
+	public void engineSetKeyEntry(String alias, byte[] key, Certificate[] chain) throws KeyStoreException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void engineSetCertificateEntry(String alias, Certificate cert) throws KeyStoreException
-	{
+	public void engineSetCertificateEntry(String alias, Certificate cert) throws KeyStoreException {
 		/* we ignore the given alias as the store calculates it on its own,
 		 * duplicates are replaced */
-		if (!mStore.addCertificate(cert))
-		{
+		if (!mStore.addCertificate(cert)) {
 			throw new KeyStoreException();
 		}
 	}
 
 	@Override
-	public void engineDeleteEntry(String alias) throws KeyStoreException
-	{
+	public void engineDeleteEntry(String alias) throws KeyStoreException {
 		mStore.deleteCertificate(alias);
 	}
 
 	@Override
-	public Enumeration<String> engineAliases()
-	{
+	public Enumeration<String> engineAliases() {
 		return Collections.enumeration(mStore.aliases());
 	}
 
 	@Override
-	public boolean engineContainsAlias(String alias)
-	{
+	public boolean engineContainsAlias(String alias) {
 		return mStore.containsAlias(alias);
 	}
 
 	@Override
-	public int engineSize()
-	{
+	public int engineSize() {
 		return mStore.aliases().size();
 	}
 
 	@Override
-	public boolean engineIsKeyEntry(String alias)
-	{
+	public boolean engineIsKeyEntry(String alias) {
 		return false;
 	}
 
 	@Override
-	public boolean engineIsCertificateEntry(String alias)
-	{
+	public boolean engineIsCertificateEntry(String alias) {
 		return engineContainsAlias(alias);
 	}
 
 	@Override
-	public String engineGetCertificateAlias(Certificate cert)
-	{
+	public String engineGetCertificateAlias(Certificate cert) {
 		return mStore.getCertificateAlias(cert);
 	}
 
 	@Override
-	public void engineStore(OutputStream stream, char[] password) throws IOException, NoSuchAlgorithmException, CertificateException
-	{
+	public void engineStore(OutputStream stream, char[] password) throws IOException, NoSuchAlgorithmException, CertificateException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void engineLoad(InputStream stream, char[] password) throws IOException, NoSuchAlgorithmException, CertificateException
-	{
-		if (stream != null)
-		{
+	public void engineLoad(InputStream stream, char[] password) throws IOException, NoSuchAlgorithmException, CertificateException {
+		if (stream != null) {
 			throw new UnsupportedOperationException();
 		}
 	}

@@ -18,7 +18,10 @@ package org.strongswan.android.ui;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfileDataSource;
@@ -28,34 +31,25 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
-
 import static org.strongswan.android.utils.Constants.PREF_DEFAULT_VPN_PROFILE;
 import static org.strongswan.android.utils.Constants.PREF_DEFAULT_VPN_PROFILE_MRU;
 
-public class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener
-{
+public class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
 	private ListPreference mDefaultVPNProfile;
 
 	@Override
-	public void onCreatePreferences(Bundle bundle, String s)
-	{
+	public void onCreatePreferences(Bundle bundle, String s) {
 		setPreferencesFromResource(R.xml.settings, s);
 
-		mDefaultVPNProfile = (ListPreference)findPreference(PREF_DEFAULT_VPN_PROFILE);
+		mDefaultVPNProfile = (ListPreference) findPreference(PREF_DEFAULT_VPN_PROFILE);
 		mDefaultVPNProfile.setOnPreferenceChangeListener(this);
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
-		{
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
 			mDefaultVPNProfile.setEnabled(false);
 		}
 	}
 
 	@Override
-	public void onResume()
-	{
+	public void onResume() {
 		super.onResume();
 
 		VpnProfileDataSource profiles = new VpnProfileDataSource(getActivity());
@@ -64,8 +58,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		List<VpnProfile> all = profiles.getAllVpnProfiles();
 		Collections.sort(all, new Comparator<VpnProfile>() {
 			@Override
-			public int compare(VpnProfile lhs, VpnProfile rhs)
-			{
+			public int compare(VpnProfile lhs, VpnProfile rhs) {
 				return lhs.getName().compareToIgnoreCase(rhs.getName());
 			}
 		});
@@ -76,19 +69,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		entries.add(getString(R.string.pref_default_vpn_profile_mru));
 		entryvalues.add(PREF_DEFAULT_VPN_PROFILE_MRU);
 
-		for (VpnProfile profile : all)
-		{
+		for (VpnProfile profile : all) {
 			entries.add(profile.getName());
 			entryvalues.add(profile.getUUID().toString());
 		}
 		profiles.close();
 
-		if (entries.size() <= 1)
-		{
+		if (entries.size() <= 1) {
 			mDefaultVPNProfile.setEnabled(false);
-		}
-		else
-		{
+		} else {
 			mDefaultVPNProfile.setEnabled(true);
 			mDefaultVPNProfile.setEntries(entries.toArray(new CharSequence[0]));
 			mDefaultVPNProfile.setEntryValues(entryvalues.toArray(new CharSequence[0]));
@@ -99,34 +88,25 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	}
 
 	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue)
-	{
-		if (preference == mDefaultVPNProfile)
-		{
-			setCurrentProfileName((String)newValue);
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		if (preference == mDefaultVPNProfile) {
+			setCurrentProfileName((String) newValue);
 		}
 		return true;
 	}
 
-	private void setCurrentProfileName(String uuid)
-	{
+	private void setCurrentProfileName(String uuid) {
 		VpnProfileDataSource profiles = new VpnProfileDataSource(getActivity());
 		profiles.open();
 
-		if (!uuid.equals(PREF_DEFAULT_VPN_PROFILE_MRU))
-		{
+		if (!uuid.equals(PREF_DEFAULT_VPN_PROFILE_MRU)) {
 			VpnProfile current = profiles.getVpnProfile(uuid);
-			if (current != null)
-			{
+			if (current != null) {
 				mDefaultVPNProfile.setSummary(current.getName());
-			}
-			else
-			{
+			} else {
 				mDefaultVPNProfile.setSummary(R.string.profile_not_found);
 			}
-		}
-		else
-		{
+		} else {
 			mDefaultVPNProfile.setSummary(R.string.pref_default_vpn_profile_mru);
 		}
 		profiles.close();

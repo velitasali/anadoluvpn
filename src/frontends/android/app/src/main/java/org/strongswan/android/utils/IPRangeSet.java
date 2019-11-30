@@ -15,18 +15,13 @@
 
 package org.strongswan.android.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Class that represents a set of IP address ranges (not necessarily proper subnets) and allows
  * modifying the set and enumerating the resulting subnets.
  */
-public class IPRangeSet implements Iterable<IPRange>
-{
+public class IPRangeSet implements Iterable<IPRange> {
 	private TreeSet<IPRange> mRanges = new TreeSet<>();
 
 	/**
@@ -34,20 +29,15 @@ public class IPRangeSet implements Iterable<IPRange>
 	 * resulting set or {@code null} if the string was invalid. An empty set is returned if the given string
 	 * is {@code null}.
 	 */
-	public static IPRangeSet fromString(String ranges)
-	{
+	public static IPRangeSet fromString(String ranges) {
 		IPRangeSet set = new IPRangeSet();
-		if (ranges != null)
-		{
-			for (String range : ranges.split("\\s+"))
-			{
-				try
-				{
+		if (ranges != null) {
+			for (String range : ranges.split("\\s+")) {
+				try {
 					set.add(new IPRange(range));
-				}
-				catch (Exception unused)
-				{	/* besides due to invalid strings exceptions might get thrown if the string
-					 * contains a hostname (NetworkOnMainThreadException) */
+				} catch (Exception unused) {
+					// besides due to invalid strings exceptions might get thrown if the string
+					// contains a hostname (NetworkOnMainThreadException)
 					return null;
 				}
 			}
@@ -58,22 +48,17 @@ public class IPRangeSet implements Iterable<IPRange>
 	/**
 	 * Add a range to this set. Automatically gets merged with existing ranges.
 	 */
-	public void add(IPRange range)
-	{
-		if (mRanges.contains(range))
-		{
+	public void add(IPRange range) {
+		if (mRanges.contains(range)) {
 			return;
 		}
 		reinsert:
-		while (true)
-		{
+		while (true) {
 			Iterator<IPRange> iterator = mRanges.iterator();
-			while (iterator.hasNext())
-			{
+			while (iterator.hasNext()) {
 				IPRange existing = iterator.next();
 				IPRange replacement = existing.merge(range);
-				if (replacement != null)
-				{
+				if (replacement != null) {
 					iterator.remove();
 					range = replacement;
 					continue reinsert;
@@ -87,14 +72,11 @@ public class IPRangeSet implements Iterable<IPRange>
 	/**
 	 * Add all ranges from the given set.
 	 */
-	public void add(IPRangeSet ranges)
-	{
-		if (ranges == this)
-		{
+	public void add(IPRangeSet ranges) {
+		if (ranges == this) {
 			return;
 		}
-		for (IPRange range : ranges.mRanges)
-		{
+		for (IPRange range : ranges.mRanges) {
 			add(range);
 		}
 	}
@@ -102,10 +84,8 @@ public class IPRangeSet implements Iterable<IPRange>
 	/**
 	 * Add all ranges from the given collection to this set.
 	 */
-	public void addAll(Collection<? extends IPRange> coll)
-	{
-		for (IPRange range : coll)
-		{
+	public void addAll(Collection<? extends IPRange> coll) {
+		for (IPRange range : coll) {
 			add(range);
 		}
 	}
@@ -113,20 +93,15 @@ public class IPRangeSet implements Iterable<IPRange>
 	/**
 	 * Remove the given range from this set. Existing ranges are automatically adjusted.
 	 */
-	public void remove(IPRange range)
-	{
-		ArrayList <IPRange> additions = new ArrayList<>();
+	public void remove(IPRange range) {
+		ArrayList<IPRange> additions = new ArrayList<>();
 		Iterator<IPRange> iterator = mRanges.iterator();
-		while (iterator.hasNext())
-		{
+		while (iterator.hasNext()) {
 			IPRange existing = iterator.next();
 			List<IPRange> result = existing.remove(range);
-			if (result.size() == 0)
-			{
+			if (result.size() == 0) {
 				iterator.remove();
-			}
-			else if (!result.get(0).equals(existing))
-			{
+			} else if (!result.get(0).equals(existing)) {
 				iterator.remove();
 				additions.addAll(result);
 			}
@@ -137,15 +112,12 @@ public class IPRangeSet implements Iterable<IPRange>
 	/**
 	 * Remove the given ranges from ranges in this set.
 	 */
-	public void remove(IPRangeSet ranges)
-	{
-		if (ranges == this)
-		{
+	public void remove(IPRangeSet ranges) {
+		if (ranges == this) {
 			mRanges.clear();
 			return;
 		}
-		for (IPRange range : ranges.mRanges)
-		{
+		for (IPRange range : ranges.mRanges) {
 			remove(range);
 		}
 	}
@@ -153,29 +125,22 @@ public class IPRangeSet implements Iterable<IPRange>
 	/**
 	 * Get all the subnets derived from all the ranges in this set.
 	 */
-	public Iterable<IPRange> subnets()
-	{
-		return new Iterable<IPRange>()
-		{
+	public Iterable<IPRange> subnets() {
+		return new Iterable<IPRange>() {
 			@Override
-			public Iterator<IPRange> iterator()
-			{
-				return new Iterator<IPRange>()
-				{
+			public Iterator<IPRange> iterator() {
+				return new Iterator<IPRange>() {
 					private Iterator<IPRange> mIterator = mRanges.iterator();
 					private List<IPRange> mSubnets;
 
 					@Override
-					public boolean hasNext()
-					{
+					public boolean hasNext() {
 						return (mSubnets != null && mSubnets.size() > 0) || mIterator.hasNext();
 					}
 
 					@Override
-					public IPRange next()
-					{
-						if (mSubnets == null || mSubnets.size() == 0)
-						{
+					public IPRange next() {
+						if (mSubnets == null || mSubnets.size() == 0) {
 							IPRange range = mIterator.next();
 							mSubnets = range.toSubnets();
 						}
@@ -183,8 +148,7 @@ public class IPRangeSet implements Iterable<IPRange>
 					}
 
 					@Override
-					public void remove()
-					{
+					public void remove() {
 						throw new UnsupportedOperationException();
 					}
 				};
@@ -193,27 +157,23 @@ public class IPRangeSet implements Iterable<IPRange>
 	}
 
 	@Override
-	public Iterator<IPRange> iterator()
-	{
+	public Iterator<IPRange> iterator() {
 		return mRanges.iterator();
 	}
 
 	/**
 	 * Returns the number of ranges, not subnets.
 	 */
-	public int size()
-	{
+	public int size() {
 		return mRanges.size();
 	}
 
 	@Override
-	public String toString()
-	{	/* we could use TextUtils, but that causes the unit tests to fail */
+	public String toString() {
+		// we could use TextUtils, but that causes the unit tests to fail
 		StringBuilder sb = new StringBuilder();
-		for (IPRange range : mRanges)
-		{
-			if (sb.length() > 0)
-			{
+		for (IPRange range : mRanges) {
+			if (sb.length() > 0) {
 				sb.append(" ");
 			}
 			sb.append(range.toString());

@@ -19,18 +19,15 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-
-import com.velitasali.android.vpn.R;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDialogFragment;
+import com.velitasali.android.vpn.R;
 
 /**
  * Class that displays a confirmation dialog to delete a selected local
  * certificate.
  */
-public class CertificateDeleteConfirmationDialog extends AppCompatDialogFragment
-{
+public class CertificateDeleteConfirmationDialog extends AppCompatDialogFragment {
 	public static final String ALIAS = "alias";
 	OnCertificateDeleteListener mListener;
 
@@ -38,42 +35,35 @@ public class CertificateDeleteConfirmationDialog extends AppCompatDialogFragment
 	 * Interface that can be implemented by parent activities to get the
 	 * alias of the certificate to delete, if the user confirms the deletion.
 	 */
-	public interface OnCertificateDeleteListener
-	{
+	public interface OnCertificateDeleteListener {
 		public void onDelete(String alias);
 	}
 
 	@Override
-	public void onAttach(Context context)
-	{
+	public void onAttach(Context context) {
 		super.onAttach(context);
-		if (context instanceof OnCertificateDeleteListener)
-		{
-			mListener = (OnCertificateDeleteListener)context;
+		if (context instanceof OnCertificateDeleteListener) {
+			mListener = (OnCertificateDeleteListener) context;
 		}
 	}
 
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState)
-	{
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		return new AlertDialog.Builder(getActivity())
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setTitle(R.string.delete_certificate_question)
 			.setMessage(R.string.delete_certificate)
 			.setPositiveButton(R.string.delete_profile, new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int whichButton)
-				{
-					if (mListener != null)
-					{
+				public void onClick(DialogInterface dialog, int whichButton) {
+					if (mListener != null) {
 						mListener.onDelete(getArguments().getString(ALIAS));
 					}
 				}
 			})
 			.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					dismiss();
 				}
 			}).create();

@@ -25,7 +25,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
-
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDialogFragment;
+import androidx.fragment.app.FragmentTransaction;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.logic.TrustedCertificateManager;
@@ -37,59 +40,43 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDialogFragment;
-import androidx.fragment.app.FragmentTransaction;
-
-public class TrustedCertificateImportActivity extends AppCompatActivity
-{
+public class TrustedCertificateImportActivity extends AppCompatActivity {
 	private static final int OPEN_DOCUMENT = 0;
 	private static final String DIALOG_TAG = "Dialog";
 	private Uri mCertificateUri;
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (savedInstanceState != null)
-		{	/* do nothing when we are restoring */
+		if (savedInstanceState != null) {
+			// do nothing when we are restoring
 			return;
 		}
 
 		Intent intent = getIntent();
 		String action = intent.getAction();
-		if (Intent.ACTION_VIEW.equals(action))
-		{
+		if (Intent.ACTION_VIEW.equals(action)) {
 			importCertificate(intent.getData());
-		}
-		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-		{
+		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 			Intent openIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 			openIntent.setType("*/*");
-			try
-			{
+			try {
 				startActivityForResult(openIntent, OPEN_DOCUMENT);
-			}
-			catch (ActivityNotFoundException e)
-			{	/* some devices are unable to browse for files */
+			} catch (ActivityNotFoundException e) {
+				// some devices are unable to browse for files
 				finish();
-				return;
 			}
 		}
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		switch (requestCode)
-		{
+		switch (requestCode) {
 			case OPEN_DOCUMENT:
-				if (resultCode == Activity.RESULT_OK && data != null)
-				{
+				if (resultCode == Activity.RESULT_OK && data != null) {
 					mCertificateUri = data.getData();
 					return;
 				}
@@ -99,11 +86,9 @@ public class TrustedCertificateImportActivity extends AppCompatActivity
 	}
 
 	@Override
-	protected void onPostResume()
-	{
+	protected void onPostResume() {
 		super.onPostResume();
-		if (mCertificateUri != null)
-		{
+		if (mCertificateUri != null) {
 			importCertificate(mCertificateUri);
 			mCertificateUri = null;
 		}
@@ -114,20 +99,18 @@ public class TrustedCertificateImportActivity extends AppCompatActivity
 	 *
 	 * @param uri
 	 */
-	private void importCertificate(Uri uri)
-	{
+	private void importCertificate(Uri uri) {
 		X509Certificate certificate = parseCertificate(uri);
-		if (certificate == null)
-		{
+		if (certificate == null) {
 			Toast.makeText(this, R.string.cert_import_failed, Toast.LENGTH_LONG).show();
 			finish();
 			return;
 		}
-		/* Ask the user whether to import the certificate.  This is particularly
-		 * necessary because the import activity can be triggered by any app on
-		 * the system.  Also, if our app is the only one that is registered to
-		 * open certificate files by MIME type the user would have no idea really
-		 * where the file was imported just by reading the Toast we display. */
+		// Ask the user whether to import the certificate.  This is particularly
+		// necessary because the import activity can be triggered by any app on
+		// the system.  Also, if our app is the only one that is registered to
+		// open certificate files by MIME type the user would have no idea really
+		// where the file was imported just by reading the Toast we display.
 		ConfirmImportDialog dialog = new ConfirmImportDialog();
 		Bundle args = new Bundle();
 		args.putSerializable(VpnProfileDataSource.KEY_CERTIFICATE, certificate);
@@ -143,22 +126,16 @@ public class TrustedCertificateImportActivity extends AppCompatActivity
 	 * @param uri
 	 * @return certificate or null
 	 */
-	private X509Certificate parseCertificate(Uri uri)
-	{
+	private X509Certificate parseCertificate(Uri uri) {
 		X509Certificate certificate = null;
-		try
-		{
+		try {
 			CertificateFactory factory = CertificateFactory.getInstance("X.509");
 			InputStream in = getContentResolver().openInputStream(uri);
-			certificate = (X509Certificate)factory.generateCertificate(in);
-			/* we don't check whether it's actually a CA certificate or not */
-		}
-		catch (CertificateException e)
-		{
+			certificate = (X509Certificate) factory.generateCertificate(in);
+			// we don't check whether it's actually a CA certificate or not
+		} catch (CertificateException e) {
 			e.printStackTrace();
-		}
-		catch (FileNotFoundException e)
-		{
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 		return certificate;
@@ -171,18 +148,14 @@ public class TrustedCertificateImportActivity extends AppCompatActivity
 	 * @param certificate
 	 * @return whether it was successfully stored
 	 */
-	private boolean storeCertificate(X509Certificate certificate)
-	{
-		try
-		{
+	private boolean storeCertificate(X509Certificate certificate) {
+		try {
 			KeyStore store = KeyStore.getInstance("LocalCertificateStore");
 			store.load(null, null);
 			store.setCertificateEntry(null, certificate);
 			TrustedCertificateManager.getInstance().reset();
 			return true;
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -192,50 +165,40 @@ public class TrustedCertificateImportActivity extends AppCompatActivity
 	 * Class that displays a confirmation dialog when a certificate should get
 	 * imported. If the user confirms the import we try to store it.
 	 */
-	public static class ConfirmImportDialog extends AppCompatDialogFragment
-	{
+	public static class ConfirmImportDialog extends AppCompatDialogFragment {
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			final X509Certificate certificate;
 
-			certificate = (X509Certificate)getArguments().getSerializable(VpnProfileDataSource.KEY_CERTIFICATE);
+			certificate = (X509Certificate) getArguments().getSerializable(VpnProfileDataSource.KEY_CERTIFICATE);
 
 			return new AlertDialog.Builder(getActivity())
 				.setIcon(R.drawable.ic_launcher)
 				.setTitle(R.string.import_certificate)
 				.setMessage(certificate.getSubjectDN().toString())
-				.setPositiveButton(R.string.import_certificate, new DialogInterface.OnClickListener()
-				{
+				.setPositiveButton(R.string.import_certificate, new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(DialogInterface dialog, int whichButton)
-					{
-						TrustedCertificateImportActivity activity = (TrustedCertificateImportActivity)getActivity();
-						if (activity.storeCertificate(certificate))
-						{
+					public void onClick(DialogInterface dialog, int whichButton) {
+						TrustedCertificateImportActivity activity = (TrustedCertificateImportActivity) getActivity();
+						if (activity.storeCertificate(certificate)) {
 							Toast.makeText(getActivity(), R.string.cert_imported_successfully, Toast.LENGTH_LONG).show();
 							getActivity().setResult(Activity.RESULT_OK);
-						}
-						else
-						{
+						} else {
 							Toast.makeText(getActivity(), R.string.cert_import_failed, Toast.LENGTH_LONG).show();
 						}
 						getActivity().finish();
 					}
 				})
-				.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-				{
+				.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
+					public void onClick(DialogInterface dialog, int which) {
 						getActivity().finish();
 					}
 				}).create();
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog)
-		{
+		public void onCancel(DialogInterface dialog) {
 			getActivity().finish();
 		}
 	}

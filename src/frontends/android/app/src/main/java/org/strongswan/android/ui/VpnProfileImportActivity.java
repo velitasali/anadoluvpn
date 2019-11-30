@@ -28,21 +28,17 @@ import android.security.KeyChainAliasCallback;
 import android.security.KeyChainException;
 import android.text.TextUtils;
 import android.util.Base64;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.view.*;
+import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import com.velitasali.android.vpn.R;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling;
 import org.strongswan.android.data.VpnProfileDataSource;
@@ -55,11 +51,8 @@ import org.strongswan.android.utils.Constants;
 import org.strongswan.android.utils.IPRangeSet;
 import org.strongswan.android.utils.Utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.net.ssl.SSLHandshakeException;
+import java.io.*;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
@@ -72,16 +65,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.net.ssl.SSLHandshakeException;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.AsyncTaskLoader;
-import androidx.loader.content.Loader;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-public class VpnProfileImportActivity extends AppCompatActivity
-{
+public class VpnProfileImportActivity extends AppCompatActivity {
 	private static final String PKCS12_INSTALLED = "PKCS12_INSTALLED";
 	private static final String PROFILE_URI = "PROFILE_URI";
 	private static final int INSTALL_PKCS12 = 0;
@@ -112,51 +96,42 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	private ViewGroup mRemoteCertificate;
 	private RelativeLayout mRemoteCert;
 
-	private LoaderManager.LoaderCallbacks<ProfileLoadResult> mProfileLoaderCallbacks = new LoaderManager.LoaderCallbacks<ProfileLoadResult>()
-	{
+	private LoaderManager.LoaderCallbacks<ProfileLoadResult> mProfileLoaderCallbacks = new LoaderManager.LoaderCallbacks<ProfileLoadResult>() {
 		@Override
-		public Loader<ProfileLoadResult> onCreateLoader(int id, Bundle args)
-		{
-			return new ProfileLoader(VpnProfileImportActivity.this, (Uri)args.getParcelable(PROFILE_URI));
+		public Loader<ProfileLoadResult> onCreateLoader(int id, Bundle args) {
+			return new ProfileLoader(VpnProfileImportActivity.this, (Uri) args.getParcelable(PROFILE_URI));
 		}
 
 		@Override
-		public void onLoadFinished(Loader<ProfileLoadResult> loader, ProfileLoadResult data)
-		{
+		public void onLoadFinished(Loader<ProfileLoadResult> loader, ProfileLoadResult data) {
 			handleProfile(data);
 		}
 
 		@Override
-		public void onLoaderReset(Loader<ProfileLoadResult> loader)
-		{
+		public void onLoaderReset(Loader<ProfileLoadResult> loader) {
 
 		}
 	};
 
-	private LoaderManager.LoaderCallbacks<TrustedCertificateEntry> mUserCertificateLoaderCallbacks = new LoaderManager.LoaderCallbacks<TrustedCertificateEntry>()
-	{
+	private LoaderManager.LoaderCallbacks<TrustedCertificateEntry> mUserCertificateLoaderCallbacks = new LoaderManager.LoaderCallbacks<TrustedCertificateEntry>() {
 		@Override
-		public Loader<TrustedCertificateEntry> onCreateLoader(int id, Bundle args)
-		{
+		public Loader<TrustedCertificateEntry> onCreateLoader(int id, Bundle args) {
 			return new UserCertificateLoader(VpnProfileImportActivity.this, mUserCertLoading);
 		}
 
 		@Override
-		public void onLoadFinished(Loader<TrustedCertificateEntry> loader, TrustedCertificateEntry data)
-		{
+		public void onLoadFinished(Loader<TrustedCertificateEntry> loader, TrustedCertificateEntry data) {
 			handleUserCertificate(data);
 		}
 
 		@Override
-		public void onLoaderReset(Loader<TrustedCertificateEntry> loader)
-		{
+		public void onLoaderReset(Loader<TrustedCertificateEntry> loader) {
 
 		}
 	};
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
@@ -168,23 +143,23 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		setContentView(R.layout.profile_import_view);
 
 		mProgressBar = findViewById(R.id.progress_bar);
-		mExistsWarning = (TextView)findViewById(R.id.exists_warning);
-		mBasicDataGroup = (ViewGroup)findViewById(R.id.basic_data_group);
-		mName = (TextView)findViewById(R.id.name);
-		mGateway = (TextView)findViewById(R.id.gateway);
-		mSelectVpnType = (TextView)findViewById(R.id.vpn_type);
+		mExistsWarning = (TextView) findViewById(R.id.exists_warning);
+		mBasicDataGroup = (ViewGroup) findViewById(R.id.basic_data_group);
+		mName = (TextView) findViewById(R.id.name);
+		mGateway = (TextView) findViewById(R.id.gateway);
+		mSelectVpnType = (TextView) findViewById(R.id.vpn_type);
 
-		mUsernamePassword = (ViewGroup)findViewById(R.id.username_password_group);
-		mUsername = (EditText)findViewById(R.id.username);
+		mUsernamePassword = (ViewGroup) findViewById(R.id.username_password_group);
+		mUsername = (EditText) findViewById(R.id.username);
 		mUsernameWrap = (TextInputLayoutHelper) findViewById(R.id.username_wrap);
-		mPassword = (EditText)findViewById(R.id.password);
+		mPassword = (EditText) findViewById(R.id.password);
 
-		mUserCertificate = (ViewGroup)findViewById(R.id.user_certificate_group);
-		mSelectUserCert = (RelativeLayout)findViewById(R.id.select_user_certificate);
-		mImportUserCert = (Button)findViewById(R.id.import_user_certificate);
+		mUserCertificate = (ViewGroup) findViewById(R.id.user_certificate_group);
+		mSelectUserCert = (RelativeLayout) findViewById(R.id.select_user_certificate);
+		mImportUserCert = (Button) findViewById(R.id.import_user_certificate);
 
-		mRemoteCertificate = (ViewGroup)findViewById(R.id.remote_certificate_group);
-		mRemoteCert = (RelativeLayout)findViewById(R.id.remote_certificate);
+		mRemoteCertificate = (ViewGroup) findViewById(R.id.remote_certificate_group);
+		mRemoteCert = (RelativeLayout) findViewById(R.id.remote_certificate);
 
 		mExistsWarning.setVisibility(View.GONE);
 		mBasicDataGroup.setVisibility(View.GONE);
@@ -195,8 +170,7 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		mSelectUserCert.setOnClickListener(new SelectUserCertOnClickListener());
 		mImportUserCert.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View v)
-			{
+			public void onClick(View v) {
 				Intent intent = KeyChain.createInstallIntent();
 				intent.putExtra(KeyChain.EXTRA_NAME, getString(R.string.profile_cert_alias, mProfile.getName()));
 				intent.putExtra(KeyChain.EXTRA_PKCS12, mProfile.PKCS12);
@@ -206,30 +180,22 @@ public class VpnProfileImportActivity extends AppCompatActivity
 
 		Intent intent = getIntent();
 		String action = intent.getAction();
-		if (Intent.ACTION_VIEW.equals(action))
-		{
+		if (Intent.ACTION_VIEW.equals(action)) {
 			loadProfile(getIntent().getData());
-		}
-		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-		{
+		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 			Intent openIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 			openIntent.setType("*/*");
-			try
-			{
+			try {
 				startActivityForResult(openIntent, OPEN_DOCUMENT);
-			}
-			catch (ActivityNotFoundException e)
-			{	/* some devices are unable to browse for files */
+			} catch (ActivityNotFoundException e) {    /* some devices are unable to browse for files */
 				finish();
 				return;
 			}
 		}
 
-		if (savedInstanceState != null)
-		{
+		if (savedInstanceState != null) {
 			mUserCertLoading = savedInstanceState.getString(VpnProfileDataSource.KEY_USER_CERTIFICATE);
-			if (mUserCertLoading != null)
-			{
+			if (mUserCertLoading != null) {
 				LoaderManager.getInstance(this).initLoader(USER_CERT_LOADER, null, mUserCertificateLoaderCallbacks);
 			}
 			mImportUserCert.setEnabled(!savedInstanceState.getBoolean(PKCS12_INSTALLED));
@@ -237,30 +203,25 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
 		super.onDestroy();
 		mDataSource.close();
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState)
-	{
+	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		if (mUserCertEntry != null)
-		{
+		if (mUserCertEntry != null) {
 			outState.putString(VpnProfileDataSource.KEY_USER_CERTIFICATE, mUserCertEntry.getAlias());
 		}
 		outState.putBoolean(PKCS12_INSTALLED, !mImportUserCert.isEnabled());
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
+	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.profile_import, menu);
-		if (mHideImport)
-		{
+		if (mHideImport) {
 			MenuItem item = menu.findItem(R.id.menu_accept);
 			item.setVisible(false);
 		}
@@ -268,10 +229,8 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 			case android.R.id.home:
 				finish();
 				return true;
@@ -284,21 +243,17 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		switch (requestCode)
-		{
+		switch (requestCode) {
 			case INSTALL_PKCS12:
-				if (resultCode == Activity.RESULT_OK)
-				{	/* no need to import twice */
+				if (resultCode == Activity.RESULT_OK) {    /* no need to import twice */
 					mImportUserCert.setEnabled(false);
 					mSelectUserCert.performClick();
 				}
 				break;
 			case OPEN_DOCUMENT:
-				if (resultCode == Activity.RESULT_OK && data != null)
-				{
+				if (resultCode == Activity.RESULT_OK && data != null) {
 					loadProfile(data.getData());
 					return;
 				}
@@ -307,8 +262,7 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		}
 	}
 
-	private void loadProfile(Uri uri)
-	{
+	private void loadProfile(Uri uri) {
 		mProgressBar.show();
 
 		Bundle args = new Bundle();
@@ -316,20 +270,15 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		LoaderManager.getInstance(this).initLoader(PROFILE_LOADER, args, mProfileLoaderCallbacks);
 	}
 
-	public void handleProfile(ProfileLoadResult data)
-	{
+	public void handleProfile(ProfileLoadResult data) {
 		mProgressBar.hide();
 
 		mProfile = null;
-		if (data != null && data.ThrownException == null)
-		{
-			try
-			{
+		if (data != null && data.ThrownException == null) {
+			try {
 				JSONObject obj = new JSONObject(data.Profile);
 				mProfile = parseProfile(obj);
-			}
-			catch (JSONException e)
-			{
+			} catch (JSONException e) {
 				mExistsWarning.setVisibility(View.VISIBLE);
 				mExistsWarning.setText(e.getLocalizedMessage());
 				mHideImport = true;
@@ -337,38 +286,24 @@ public class VpnProfileImportActivity extends AppCompatActivity
 				return;
 			}
 		}
-		if (mProfile == null)
-		{
+		if (mProfile == null) {
 			String error = null;
-			if (data.ThrownException != null)
-			{
-				try
-				{
+			if (data.ThrownException != null) {
+				try {
 					throw data.ThrownException;
-				}
-				catch (FileNotFoundException e)
-				{
+				} catch (FileNotFoundException e) {
 					error = getString(R.string.profile_import_failed_not_found);
-				}
-				catch (UnknownHostException e)
-				{
+				} catch (UnknownHostException e) {
 					error = getString(R.string.profile_import_failed_host);
-				}
-				catch (SSLHandshakeException e)
-				{
+				} catch (SSLHandshakeException e) {
 					error = getString(R.string.profile_import_failed_tls);
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			if (error != null)
-			{
+			if (error != null) {
 				Toast.makeText(this, getString(R.string.profile_import_failed_detail, error), Toast.LENGTH_LONG).show();
-			}
-			else
-			{
+			} else {
 				Toast.makeText(this, R.string.profile_import_failed, Toast.LENGTH_LONG).show();
 			}
 			finish();
@@ -383,11 +318,9 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		mSelectVpnType.setText(getResources().getStringArray(R.array.vpn_types)[mProfile.getVpnType().ordinal()]);
 
 		mUsernamePassword.setVisibility(mProfile.getVpnType().has(VpnTypeFeature.USER_PASS) ? View.VISIBLE : View.GONE);
-		if (mProfile.getVpnType().has(VpnTypeFeature.USER_PASS))
-		{
+		if (mProfile.getVpnType().has(VpnTypeFeature.USER_PASS)) {
 			mUsername.setText(mProfile.getUsername());
-			if (mProfile.getUsername() != null && !mProfile.getUsername().isEmpty())
-			{
+			if (mProfile.getUsername() != null && !mProfile.getUsername().isEmpty()) {
 				mUsername.setEnabled(false);
 			}
 		}
@@ -396,73 +329,56 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		mRemoteCertificate.setVisibility(mProfile.Certificate != null ? View.VISIBLE : View.GONE);
 		mImportUserCert.setVisibility(mProfile.PKCS12 != null ? View.VISIBLE : View.GONE);
 
-		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE))
-		{	/* try to load an existing certificate with the default name */
-			if (mUserCertLoading == null)
-			{
+		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE)) {    /* try to load an existing certificate with the default name */
+			if (mUserCertLoading == null) {
 				mUserCertLoading = getString(R.string.profile_cert_alias, mProfile.getName());
 				LoaderManager.getInstance(this).initLoader(USER_CERT_LOADER, null, mUserCertificateLoaderCallbacks);
 			}
 			updateUserCertView();
 		}
 
-		if (mProfile.Certificate != null)
-		{
-			try
-			{
+		if (mProfile.Certificate != null) {
+			try {
 				CertificateFactory factory = CertificateFactory.getInstance("X.509");
-				X509Certificate certificate = (X509Certificate)factory.generateCertificate(new ByteArrayInputStream(mProfile.Certificate));
+				X509Certificate certificate = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(mProfile.Certificate));
 				KeyStore store = KeyStore.getInstance("LocalCertificateStore");
 				store.load(null, null);
 				String alias = store.getCertificateAlias(certificate);
 				mCertEntry = new TrustedCertificateEntry(alias, certificate);
-				((TextView)mRemoteCert.findViewById(android.R.id.text1)).setText(mCertEntry.getSubjectPrimary());
-				((TextView)mRemoteCert.findViewById(android.R.id.text2)).setText(mCertEntry.getSubjectSecondary());
-			}
-			catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e)
-			{
+				((TextView) mRemoteCert.findViewById(android.R.id.text1)).setText(mCertEntry.getSubjectPrimary());
+				((TextView) mRemoteCert.findViewById(android.R.id.text2)).setText(mCertEntry.getSubjectSecondary());
+			} catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
 				e.printStackTrace();
 				mRemoteCertificate.setVisibility(View.GONE);
 			}
 		}
 	}
 
-	private void handleUserCertificate(TrustedCertificateEntry data)
-	{
+	private void handleUserCertificate(TrustedCertificateEntry data) {
 		mUserCertEntry = data;
 		mUserCertLoading = null;
 		updateUserCertView();
 	}
 
-	private void updateUserCertView()
-	{
-		if (mUserCertLoading != null)
-		{
-			((TextView)mSelectUserCert.findViewById(android.R.id.text1)).setText(mUserCertLoading);
-			((TextView)mSelectUserCert.findViewById(android.R.id.text2)).setText(R.string.loading);
-		}
-		else if (mUserCertEntry != null)
-		{	/* clear any errors and set the new data */
-			((TextView)mSelectUserCert.findViewById(android.R.id.text1)).setError(null);
-			((TextView)mSelectUserCert.findViewById(android.R.id.text1)).setText(mUserCertEntry.getAlias());
-			((TextView)mSelectUserCert.findViewById(android.R.id.text2)).setText(mUserCertEntry.getCertificate().getSubjectDN().toString());
-		}
-		else
-		{
-			((TextView)mSelectUserCert.findViewById(android.R.id.text1)).setText(R.string.profile_user_select_certificate_label);
-			((TextView)mSelectUserCert.findViewById(android.R.id.text2)).setText(R.string.profile_user_select_certificate);
+	private void updateUserCertView() {
+		if (mUserCertLoading != null) {
+			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setText(mUserCertLoading);
+			((TextView) mSelectUserCert.findViewById(android.R.id.text2)).setText(R.string.loading);
+		} else if (mUserCertEntry != null) {    /* clear any errors and set the new data */
+			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setError(null);
+			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setText(mUserCertEntry.getAlias());
+			((TextView) mSelectUserCert.findViewById(android.R.id.text2)).setText(mUserCertEntry.getCertificate().getSubjectDN().toString());
+		} else {
+			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setText(R.string.profile_user_select_certificate_label);
+			((TextView) mSelectUserCert.findViewById(android.R.id.text2)).setText(R.string.profile_user_select_certificate);
 		}
 	}
 
-	private ParsedVpnProfile parseProfile(JSONObject obj) throws JSONException
-	{
+	private ParsedVpnProfile parseProfile(JSONObject obj) throws JSONException {
 		UUID uuid;
-		try
-		{
+		try {
 			uuid = UUID.fromString(obj.getString("uuid"));
-		}
-		catch (IllegalArgumentException e)
-		{
+		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -480,43 +396,34 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		profile.setRemoteId(remote.optString("id", null));
 		profile.Certificate = decodeBase64(remote.optString("cert", null));
 
-		if (!remote.optBoolean("certreq", true))
-		{
+		if (!remote.optBoolean("certreq", true)) {
 			flags |= VpnProfile.FLAGS_SUPPRESS_CERT_REQS;
 		}
 
 		JSONObject revocation = remote.optJSONObject("revocation");
-		if (revocation != null)
-		{
-			if (!revocation.optBoolean("crl", true))
-			{
+		if (revocation != null) {
+			if (!revocation.optBoolean("crl", true)) {
 				flags |= VpnProfile.FLAGS_DISABLE_CRL;
 			}
-			if (!revocation.optBoolean("ocsp", true))
-			{
+			if (!revocation.optBoolean("ocsp", true)) {
 				flags |= VpnProfile.FLAGS_DISABLE_OCSP;
 			}
-			if (revocation.optBoolean("strict", false))
-			{
+			if (revocation.optBoolean("strict", false)) {
 				flags |= VpnProfile.FLAGS_STRICT_REVOCATION;
 			}
 		}
 
 		JSONObject local = obj.optJSONObject("local");
-		if (local != null)
-		{
-			if (type.has(VpnTypeFeature.USER_PASS))
-			{
+		if (local != null) {
+			if (type.has(VpnTypeFeature.USER_PASS)) {
 				profile.setUsername(local.optString("eap_id", null));
 			}
 
-			if (type.has(VpnTypeFeature.CERTIFICATE))
-			{
+			if (type.has(VpnTypeFeature.CERTIFICATE)) {
 				profile.setLocalId(local.optString("id", null));
 				profile.PKCS12 = decodeBase64(local.optString("p12", null));
 
-				if (local.optBoolean("rsa-pss", false))
-				{
+				if (local.optBoolean("rsa-pss", false)) {
 					flags |= VpnProfile.FLAGS_RSA_PSS;
 				}
 			}
@@ -528,8 +435,7 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		profile.setMTU(getInteger(obj, "mtu", Constants.MTU_MIN, Constants.MTU_MAX));
 		profile.setNATKeepAlive(getInteger(obj, "nat-keepalive", Constants.NAT_KEEPALIVE_MIN, Constants.NAT_KEEPALIVE_MAX));
 		JSONObject split = obj.optJSONObject("split-tunneling");
-		if (split != null)
-		{
+		if (split != null) {
 			String included = getSubnets(split, "subnets");
 			profile.setIncludedSubnets(included != null ? included : null);
 			String excluded = getSubnets(split, "excluded");
@@ -542,13 +448,10 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		/* only one of these can be set, prefer specific apps */
 		String selectedApps = getApps(obj.optJSONArray("apps"));
 		String excludedApps = getApps(obj.optJSONArray("excluded-apps"));
-		if (!TextUtils.isEmpty(selectedApps))
-		{
+		if (!TextUtils.isEmpty(selectedApps)) {
 			profile.setSelectedApps(selectedApps);
 			profile.setSelectedAppsHandling(SelectedAppsHandling.SELECTED_APPS_ONLY);
-		}
-		else if (!TextUtils.isEmpty(excludedApps))
-		{
+		} else if (!TextUtils.isEmpty(excludedApps)) {
 			profile.setSelectedApps(excludedApps);
 			profile.setSelectedAppsHandling(SelectedAppsHandling.SELECTED_APPS_EXCLUDE);
 		}
@@ -556,88 +459,65 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		return profile;
 	}
 
-	private Integer getInteger(JSONObject obj, String key, int min, int max)
-	{
+	private Integer getInteger(JSONObject obj, String key, int min, int max) {
 		Integer res = obj.optInt(key);
 		return res < min || res > max ? null : res;
 	}
 
-	private String getProposal(JSONObject obj, String key, boolean ike) throws JSONException
-	{
+	private String getProposal(JSONObject obj, String key, boolean ike) throws JSONException {
 		String value = obj.optString(key, null);
-		if (!TextUtils.isEmpty(value))
-		{
-			if (!Utils.isProposalValid(ike, value))
-			{
+		if (!TextUtils.isEmpty(value)) {
+			if (!Utils.isProposalValid(ike, value)) {
 				throw new JSONException(getString(R.string.profile_import_failed_value, key));
 			}
 		}
 		return value;
 	}
 
-	private String getSubnets(JSONObject split, String key) throws JSONException
-	{
+	private String getSubnets(JSONObject split, String key) throws JSONException {
 		ArrayList<String> subnets = new ArrayList<>();
 		JSONArray arr = split.optJSONArray(key);
-		if (arr != null)
-		{
-			for (int i = 0; i < arr.length(); i++)
-			{	/* replace all spaces, e.g. in "192.168.1.1 - 192.168.1.10" */
+		if (arr != null) {
+			for (int i = 0; i < arr.length(); i++) {    /* replace all spaces, e.g. in "192.168.1.1 - 192.168.1.10" */
 				subnets.add(arr.getString(i).replace(" ", ""));
 			}
-		}
-		else
-		{
+		} else {
 			String value = split.optString(key, null);
-			if (!TextUtils.isEmpty(value))
-			{
+			if (!TextUtils.isEmpty(value)) {
 				subnets.add(value);
 			}
 		}
-		if (subnets.size() > 0)
-		{
+		if (subnets.size() > 0) {
 			String joined = TextUtils.join(" ", subnets);
 			IPRangeSet ranges = IPRangeSet.fromString(joined);
-			if (ranges == null)
-			{
+			if (ranges == null) {
 				throw new JSONException(getString(R.string.profile_import_failed_value,
-												  "split-tunneling." + key));
+					"split-tunneling." + key));
 			}
 			return ranges.toString();
 		}
 		return null;
 	}
 
-	private String getAddressList(JSONObject obj, String key) throws JSONException
-	{
+	private String getAddressList(JSONObject obj, String key) throws JSONException {
 		ArrayList<String> addrs = new ArrayList<>();
 		JSONArray arr = obj.optJSONArray(key);
-		if (arr != null)
-		{
-			for (int i = 0; i < arr.length(); i++)
-			{
+		if (arr != null) {
+			for (int i = 0; i < arr.length(); i++) {
 				String addr = arr.getString(i).replace(" ", "");
 				addrs.add(addr);
 			}
-		}
-		else
-		{
+		} else {
 			String value = obj.optString(key, null);
-			if (!TextUtils.isEmpty(value))
-			{
+			if (!TextUtils.isEmpty(value)) {
 				Collections.addAll(addrs, value.split("\\s+"));
 			}
 		}
-		if (addrs.size() > 0)
-		{
-			for (String addr : addrs)
-			{
-				try
-				{
+		if (addrs.size() > 0) {
+			for (String addr : addrs) {
+				try {
 					Utils.parseInetAddress(addr);
-				}
-				catch (UnknownHostException e)
-				{
+				} catch (UnknownHostException e) {
 					throw new JSONException(getString(R.string.profile_import_failed_value, key));
 				}
 			}
@@ -646,13 +526,10 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		return null;
 	}
 
-	private String getApps(JSONArray arr) throws JSONException
-	{
+	private String getApps(JSONArray arr) throws JSONException {
 		ArrayList<String> apps = new ArrayList<>();
-		if (arr != null)
-		{
-			for (int i = 0; i < arr.length(); i++)
-			{
+		if (arr != null) {
+			for (int i = 0; i < arr.length(); i++) {
 				apps.add(arr.getString(i));
 			}
 		}
@@ -663,31 +540,22 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	 * Save or update the profile depending on whether we actually have a
 	 * profile object or not (this was created in updateProfileData)
 	 */
-	private void saveProfile()
-	{
-		if (verifyInput())
-		{
+	private void saveProfile() {
+		if (verifyInput()) {
 			updateProfileData();
-			if (mExisting != null)
-			{
+			if (mExisting != null) {
 				mProfile.setId(mExisting.getId());
 				mDataSource.updateVpnProfile(mProfile);
-			}
-			else
-			{
+			} else {
 				mDataSource.insertProfile(mProfile);
 			}
-			if (mCertEntry != null)
-			{
-				try
-				{	/* store the CA/server certificate */
+			if (mCertEntry != null) {
+				try {    /* store the CA/server certificate */
 					KeyStore store = KeyStore.getInstance("LocalCertificateStore");
 					store.load(null, null);
 					store.setCertificateEntry(null, mCertEntry.getCertificate());
 					TrustedCertificateManager.getInstance().reset();
-				}
-				catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e)
-				{
+				} catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
 					e.printStackTrace();
 				}
 			}
@@ -706,22 +574,19 @@ public class VpnProfileImportActivity extends AppCompatActivity
 
 	/**
 	 * Verify the user input and display error messages.
+	 *
 	 * @return true if the input is valid
 	 */
-	private boolean verifyInput()
-	{
+	private boolean verifyInput() {
 		boolean valid = true;
-		if (mProfile.getVpnType().has(VpnTypeFeature.USER_PASS))
-		{
-			if (mUsername.getText().toString().trim().isEmpty())
-			{
+		if (mProfile.getVpnType().has(VpnTypeFeature.USER_PASS)) {
+			if (mUsername.getText().toString().trim().isEmpty()) {
 				mUsernameWrap.setError(getString(R.string.alert_text_no_input_username));
 				valid = false;
 			}
 		}
-		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE) && mUserCertEntry == null)
-		{	/* let's show an error icon */
-			((TextView)mSelectUserCert.findViewById(android.R.id.text1)).setError("");
+		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE) && mUserCertEntry == null) {    /* let's show an error icon */
+			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setError("");
 			valid = false;
 		}
 		return valid;
@@ -730,21 +595,17 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	/**
 	 * Update the profile object with the data entered by the user
 	 */
-	private void updateProfileData()
-	{
-		if (mProfile.getVpnType().has(VpnTypeFeature.USER_PASS))
-		{
+	private void updateProfileData() {
+		if (mProfile.getVpnType().has(VpnTypeFeature.USER_PASS)) {
 			mProfile.setUsername(mUsername.getText().toString().trim());
 			String password = mPassword.getText().toString().trim();
 			password = password.isEmpty() ? null : password;
 			mProfile.setPassword(password);
 		}
-		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE))
-		{
+		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE)) {
 			mProfile.setUserCertificateAlias(mUserCertEntry.getAlias());
 		}
-		if (mCertEntry != null)
-		{
+		if (mCertEntry != null) {
 			mProfile.setCertificateAlias(mCertEntry.getAlias());
 		}
 	}
@@ -752,55 +613,39 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	/**
 	 * Load the JSON-encoded VPN profile from the given URI
 	 */
-	private static class ProfileLoader extends AsyncTaskLoader<ProfileLoadResult>
-	{
+	private static class ProfileLoader extends AsyncTaskLoader<ProfileLoadResult> {
 		private final Uri mUri;
 		private ProfileLoadResult mData;
 
-		public ProfileLoader(Context context, Uri uri)
-		{
+		public ProfileLoader(Context context, Uri uri) {
 			super(context);
 			mUri = uri;
 		}
 
 		@Override
-		public ProfileLoadResult loadInBackground()
-		{
+		public ProfileLoadResult loadInBackground() {
 			ProfileLoadResult result = new ProfileLoadResult();
 			InputStream in = null;
 
 			if (ContentResolver.SCHEME_CONTENT.equals(mUri.getScheme()) ||
-				ContentResolver.SCHEME_FILE.equals(mUri.getScheme()))
-			{
-				try
-				{
+				ContentResolver.SCHEME_FILE.equals(mUri.getScheme())) {
+				try {
 					in = getContext().getContentResolver().openInputStream(mUri);
-				}
-				catch (FileNotFoundException e)
-				{
+				} catch (FileNotFoundException e) {
 					result.ThrownException = e;
 				}
-			}
-			else
-			{
-				try
-				{
+			} else {
+				try {
 					URL url = new URL(mUri.toString());
 					in = url.openStream();
-				}
-				catch (IOException e)
-				{
+				} catch (IOException e) {
 					result.ThrownException = e;
 				}
 			}
-			if (in != null)
-			{
-				try
-				{
+			if (in != null) {
+				try {
 					result.Profile = streamToString(in);
-				}
-				catch (OutOfMemoryError e)
-				{	/* just use a generic exception */
+				} catch (OutOfMemoryError e) {    /* just use a generic exception */
 					result.ThrownException = new RuntimeException();
 				}
 			}
@@ -808,64 +653,51 @@ public class VpnProfileImportActivity extends AppCompatActivity
 		}
 
 		@Override
-		protected void onStartLoading()
-		{
-			if (mData != null)
-			{	/* if we have data ready, deliver it directly */
+		protected void onStartLoading() {
+			if (mData != null) {    /* if we have data ready, deliver it directly */
 				deliverResult(mData);
 			}
-			if (takeContentChanged() || mData == null)
-			{
+			if (takeContentChanged() || mData == null) {
 				forceLoad();
 			}
 		}
 
 		@Override
-		public void deliverResult(ProfileLoadResult data)
-		{
-			if (isReset())
-			{
+		public void deliverResult(ProfileLoadResult data) {
+			if (isReset()) {
 				return;
 			}
 			mData = data;
-			if (isStarted())
-			{	/* if it is started we deliver the data directly,
-				 * otherwise this is handled in onStartLoading */
+			if (isStarted()) {    /* if it is started we deliver the data directly,
+			 * otherwise this is handled in onStartLoading */
 				super.deliverResult(data);
 			}
 		}
 
 		@Override
-		protected void onReset()
-		{
+		protected void onReset() {
 			mData = null;
 			super.onReset();
 		}
 
-		private String streamToString(InputStream in)
-		{
+		private String streamToString(InputStream in) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			byte[] buf = new byte[1024];
 			int len;
 
-			try
-			{
-				while ((len = in.read(buf)) != -1)
-				{
+			try {
+				while ((len = in.read(buf)) != -1) {
 					out.write(buf, 0, len);
 				}
 				return out.toString("UTF-8");
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return null;
 		}
 	}
 
-	private static class ProfileLoadResult
-	{
+	private static class ProfileLoadResult {
 		public String Profile;
 		public Exception ThrownException;
 	}
@@ -873,36 +705,28 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	/**
 	 * Ask the user to select an available certificate.
 	 */
-	private class SelectUserCertOnClickListener implements View.OnClickListener, KeyChainAliasCallback
-	{
+	private class SelectUserCertOnClickListener implements View.OnClickListener, KeyChainAliasCallback {
 		@Override
-		public void onClick(View v)
-		{
+		public void onClick(View v) {
 			String alias = null;
-			if (mUserCertEntry != null)
-			{
+			if (mUserCertEntry != null) {
 				alias = mUserCertEntry.getAlias();
 				mUserCertEntry = null;
-			}
-			else if (mProfile != null)
-			{
+			} else if (mProfile != null) {
 				alias = getString(R.string.profile_cert_alias, mProfile.getName());
 			}
-			KeyChain.choosePrivateKeyAlias(VpnProfileImportActivity.this, this, new String[] { "RSA" }, null, null, -1, alias);
+			KeyChain.choosePrivateKeyAlias(VpnProfileImportActivity.this, this, new String[]{"RSA"}, null, null, -1, alias);
 		}
 
 		@Override
-		public void alias(final String alias)
-		{
+		public void alias(final String alias) {
 			/* alias() is not called from our main thread */
 			runOnUiThread(new Runnable() {
 				@Override
-				public void run()
-				{
+				public void run() {
 					mUserCertLoading = alias;
 					updateUserCertView();
-					if (alias != null)
-					{	/* otherwise the dialog was canceled, the request denied */
+					if (alias != null) {    /* otherwise the dialog was canceled, the request denied */
 						LoaderManager.getInstance(VpnProfileImportActivity.this).restartLoader(USER_CERT_LOADER, null, mUserCertificateLoaderCallbacks);
 					}
 				}
@@ -915,92 +739,72 @@ public class VpnProfileImportActivity extends AppCompatActivity
 	 * from the main thread as getCertificateChain() calls back to our main
 	 * thread to bind to the KeyChain service resulting in a deadlock.
 	 */
-	private static class UserCertificateLoader extends AsyncTaskLoader<TrustedCertificateEntry>
-	{
+	private static class UserCertificateLoader extends AsyncTaskLoader<TrustedCertificateEntry> {
 		private final String mAlias;
 		private TrustedCertificateEntry mData;
 
-		public UserCertificateLoader(Context context, String alias)
-		{
+		public UserCertificateLoader(Context context, String alias) {
 			super(context);
 			mAlias = alias;
 		}
 
 		@Override
-		public TrustedCertificateEntry loadInBackground()
-		{
+		public TrustedCertificateEntry loadInBackground() {
 			X509Certificate[] chain = null;
-			try
-			{
+			try {
 				chain = KeyChain.getCertificateChain(getContext(), mAlias);
-			}
-			catch (KeyChainException | InterruptedException e)
-			{
+			} catch (KeyChainException | InterruptedException e) {
 				e.printStackTrace();
 			}
-			if (chain != null && chain.length > 0)
-			{
+			if (chain != null && chain.length > 0) {
 				return new TrustedCertificateEntry(mAlias, chain[0]);
 			}
 			return null;
 		}
 
 		@Override
-		protected void onStartLoading()
-		{
-			if (mData != null)
-			{	/* if we have data ready, deliver it directly */
+		protected void onStartLoading() {
+			if (mData != null) {    /* if we have data ready, deliver it directly */
 				deliverResult(mData);
 			}
-			if (takeContentChanged() || mData == null)
-			{
+			if (takeContentChanged() || mData == null) {
 				forceLoad();
 			}
 		}
 
 		@Override
-		public void deliverResult(TrustedCertificateEntry data)
-		{
-			if (isReset())
-			{
+		public void deliverResult(TrustedCertificateEntry data) {
+			if (isReset()) {
 				return;
 			}
 			mData = data;
-			if (isStarted())
-			{	/* if it is started we deliver the data directly,
-				 * otherwise this is handled in onStartLoading */
+			if (isStarted()) {    /* if it is started we deliver the data directly,
+			 * otherwise this is handled in onStartLoading */
 				super.deliverResult(data);
 			}
 		}
 
 		@Override
-		protected void onReset()
-		{
+		protected void onReset() {
 			mData = null;
 			super.onReset();
 		}
 	}
 
-	private byte[] decodeBase64(String encoded)
-	{
-		if (encoded == null || encoded.isEmpty())
-		{
+	private byte[] decodeBase64(String encoded) {
+		if (encoded == null || encoded.isEmpty()) {
 			return null;
 		}
 		byte[] data = null;
-		try
-		{
+		try {
 			data = Base64.decode(encoded, Base64.DEFAULT);
-		}
-		catch (IllegalArgumentException e)
-		{
+		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		}
 		return data;
 	}
 
-	private class ParsedVpnProfile extends VpnProfile
-	{
+	private class ParsedVpnProfile extends VpnProfile {
 		public byte[] Certificate;
 		public byte[] PKCS12;
 	}

@@ -15,26 +15,13 @@
 
 package org.strongswan.android.ui;
 
-import android.content.Intent;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Toast;
-
-import com.velitasali.android.vpn.R;
-import org.strongswan.android.data.LogContentProvider;
-import org.strongswan.android.logic.CharonVpnService;
-
-import java.io.File;
-
 import androidx.appcompat.app.AppCompatActivity;
+import com.velitasali.android.vpn.R;
 
-public class LogActivity extends AppCompatActivity
-{
+public class LogActivity extends AppCompatActivity {
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.log_activity);
 

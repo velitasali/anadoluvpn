@@ -22,14 +22,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
+import androidx.fragment.app.ListFragment;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.logic.imc.RemediationInstruction;
 
-import androidx.fragment.app.ListFragment;
-
-public class RemediationInstructionFragment extends ListFragment
-{
+public class RemediationInstructionFragment extends ListFragment {
 	public static final String ARG_REMEDIATION_INSTRUCTION = "instruction";
 	private RemediationInstruction mInstruction = null;
 	private TextView mTitle;
@@ -37,77 +34,64 @@ public class RemediationInstructionFragment extends ListFragment
 	private TextView mHeader;
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
-		/* while the documentation recommends to include "@android:layout/list_content" to retain
-		 * the default functionality, this does not actually work with the ListFragment provided by
-		 * the support library as it builds the view manually and uses different IDs */
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		// while the documentation recommends to include "@android:layout/list_content" to retain
+		// the default functionality, this does not actually work with the ListFragment provided by
+		// the support library as it builds the view manually and uses different IDs
 		View layout = inflater.inflate(R.layout.remediation_instruction, container, false);
-		FrameLayout list = (FrameLayout)layout.findViewById(R.id.list_container);
+		FrameLayout list = layout.findViewById(R.id.list_container);
 		list.addView(super.onCreateView(inflater, list, savedInstanceState));
 		return layout;
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
-	{
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		if (savedInstanceState != null)
-		{
+		if (savedInstanceState != null) {
 			mInstruction = savedInstanceState.getParcelable(ARG_REMEDIATION_INSTRUCTION);
 		}
-		/* show dividers only between list items */
+		// show dividers only between list items
 		getListView().setHeaderDividersEnabled(false);
 		getListView().setFooterDividersEnabled(false);
-		/* don't show loader while adapter is not set */
+		// don't show loader while adapter is not set
 		setListShown(true);
-		mTitle = (TextView)getView().findViewById(R.id.title);
-		mDescription = (TextView)getView().findViewById(R.id.description);
-		mHeader = (TextView)getView().findViewById(R.id.list_header);
+		mTitle = getView().findViewById(R.id.title);
+		mDescription = getView().findViewById(R.id.description);
+		mHeader = getView().findViewById(R.id.list_header);
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState)
-	{
+	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putParcelable(ARG_REMEDIATION_INSTRUCTION, mInstruction);
 	}
 
 	@Override
-	public void onStart()
-	{
+	public void onStart() {
 		super.onStart();
 
 		Bundle args = getArguments();
-		if (args != null)
-		{
+		if (args != null) {
 			mInstruction = args.getParcelable(ARG_REMEDIATION_INSTRUCTION);
 		}
 		updateView(mInstruction);
 	}
 
-	public void updateView(RemediationInstruction instruction)
-	{
+	public void updateView(RemediationInstruction instruction) {
 		mInstruction = instruction;
-		if (mInstruction != null)
-		{
+		if (mInstruction != null) {
 			mTitle.setText(mInstruction.getTitle());
 			mDescription.setText(mInstruction.getDescription());
-			if (mInstruction.getHeader() != null)
-			{
+			if (mInstruction.getHeader() != null) {
 				mHeader.setText(mInstruction.getHeader());
 				setListAdapter(new ArrayAdapter<String>(getActivity(),
-							   android.R.layout.simple_list_item_1, mInstruction.getItems()));
-			}
-			else
-			{
+					android.R.layout.simple_list_item_1, mInstruction.getItems()));
+			} else {
 				mHeader.setText("");
 				setListAdapter(null);
 			}
-		}
-		else
-		{
+		} else {
 			mTitle.setText("");
 			mDescription.setText("");
 			mHeader.setText("");

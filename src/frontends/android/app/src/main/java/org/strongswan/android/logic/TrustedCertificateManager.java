@@ -29,8 +29,7 @@ import java.util.Hashtable;
 import java.util.Observable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class TrustedCertificateManager extends Observable
-{
+public class TrustedCertificateManager extends Observable {
 	private static final String TAG = TrustedCertificateManager.class.getSimpleName();
 	private final ReentrantReadWriteLock mLock = new ReentrantReadWriteLock();
 	private Hashtable<String, X509Certificate> mCACerts = new Hashtable<String, X509Certificate>();
@@ -38,21 +37,18 @@ public class TrustedCertificateManager extends Observable
 	private boolean mLoaded;
 	private final ArrayList<KeyStore> mKeyStores = new ArrayList<KeyStore>();
 
-	public enum TrustedCertificateSource
-	{
+	public enum TrustedCertificateSource {
 		SYSTEM("system:"),
 		USER("user:"),
 		LOCAL("local:");
 
 		private final String mPrefix;
 
-		private TrustedCertificateSource(String prefix)
-		{
+		private TrustedCertificateSource(String prefix) {
 			mPrefix = prefix;
 		}
 
-		private String getPrefix()
-		{
+		private String getPrefix() {
 			return mPrefix;
 		}
 	}
@@ -60,19 +56,14 @@ public class TrustedCertificateManager extends Observable
 	/**
 	 * Private constructor to prevent instantiation from other classes.
 	 */
-	private TrustedCertificateManager()
-	{
-		for (String name : new String[]{"LocalCertificateStore", "AndroidCAStore"})
-		{
+	private TrustedCertificateManager() {
+		for (String name : new String[]{"LocalCertificateStore", "AndroidCAStore"}) {
 			KeyStore store;
-			try
-			{
+			try {
 				store = KeyStore.getInstance(name);
 				store.load(null, null);
 				mKeyStores.add(store);
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 				Log.e(TAG, "Unable to load KeyStore: " + name);
 				e.printStackTrace();
 			}
@@ -82,8 +73,7 @@ public class TrustedCertificateManager extends Observable
 	/**
 	 * This is not instantiated until the first call to getInstance()
 	 */
-	private static class Singleton
-	{
+	private static class Singleton {
 		public static final TrustedCertificateManager mInstance = new TrustedCertificateManager();
 	}
 
@@ -92,21 +82,19 @@ public class TrustedCertificateManager extends Observable
 	 *
 	 * @return CA certificate manager
 	 */
-	public static TrustedCertificateManager getInstance()
-	{
+	public static TrustedCertificateManager getInstance() {
 		return Singleton.mInstance;
 	}
 
 	/**
 	 * Invalidates the current load state so that the next call to load()
 	 * will force a reload of the cached CA certificates.
-	 *
+	 * <p>
 	 * Observers are notified when this method is called.
 	 *
 	 * @return reference to itself
 	 */
-	public TrustedCertificateManager reset()
-	{
+	public TrustedCertificateManager reset() {
 		Log.d(TAG, "Force reload of cached CA certificates on next load");
 		this.mReload = true;
 		this.setChanged();
@@ -118,17 +106,15 @@ public class TrustedCertificateManager extends Observable
 	 * Ensures that the certificates are loaded but does not force a reload.
 	 * As this takes a while if the certificates are not loaded yet it should
 	 * be called asynchronously.
-	 *
+	 * <p>
 	 * Observers are only notified when the certificates are initially loaded, not when reloaded.
 	 *
 	 * @return reference to itself
 	 */
-	public TrustedCertificateManager load()
-	{
+	public TrustedCertificateManager load() {
 		Log.d(TAG, "Ensure cached CA certificates are loaded");
 		this.mLock.writeLock().lock();
-		if (!this.mLoaded || this.mReload)
-		{
+		if (!this.mLoaded || this.mReload) {
 			this.mReload = false;
 			loadCertificates();
 		}
@@ -140,17 +126,14 @@ public class TrustedCertificateManager extends Observable
 	 * Opens the CA certificate KeyStore and loads the cached certificates.
 	 * The lock must be locked when calling this method.
 	 */
-	private void loadCertificates()
-	{
+	private void loadCertificates() {
 		Log.d(TAG, "Load cached CA certificates");
 		Hashtable<String, X509Certificate> certs = new Hashtable<String, X509Certificate>();
-		for (KeyStore store : this.mKeyStores)
-		{
+		for (KeyStore store : this.mKeyStores) {
 			fetchCertificates(certs, store);
 		}
 		this.mCACerts = certs;
-		if (!this.mLoaded)
-		{
+		if (!this.mLoaded) {
 			this.setChanged();
 			this.notifyObservers();
 			this.mLoaded = true;
@@ -164,24 +147,18 @@ public class TrustedCertificateManager extends Observable
 	 * @param certs Hashtable to store certificates in
 	 * @param store KeyStore to load certificates from
 	 */
-	private void fetchCertificates(Hashtable<String, X509Certificate> certs, KeyStore store)
-	{
-		try
-		{
+	private void fetchCertificates(Hashtable<String, X509Certificate> certs, KeyStore store) {
+		try {
 			Enumeration<String> aliases = store.aliases();
-			while (aliases.hasMoreElements())
-			{
+			while (aliases.hasMoreElements()) {
 				String alias = aliases.nextElement();
 				Certificate cert;
 				cert = store.getCertificate(alias);
-				if (cert != null && cert instanceof X509Certificate)
-				{
-					certs.put(alias, (X509Certificate)cert);
+				if (cert != null && cert instanceof X509Certificate) {
+					certs.put(alias, (X509Certificate) cert);
 				}
 			}
-		}
-		catch (KeyStoreException ex)
-		{
+		} catch (KeyStoreException ex) {
 			ex.printStackTrace();
 		}
 	}
@@ -192,31 +169,23 @@ public class TrustedCertificateManager extends Observable
 	 * @param alias alias of the certificate to get
 	 * @return the certificate, null if not found
 	 */
-	public X509Certificate getCACertificateFromAlias(String alias)
-	{
+	public X509Certificate getCACertificateFromAlias(String alias) {
 		X509Certificate certificate = null;
 
-		if (this.mLock.readLock().tryLock())
-		{
+		if (this.mLock.readLock().tryLock()) {
 			certificate = this.mCACerts.get(alias);
 			this.mLock.readLock().unlock();
-		}
-		else
-		{	/* if we cannot get the lock load it directly from the KeyStore,
-			 * should be fast for a single certificate */
-			for (KeyStore store : this.mKeyStores)
-			{
-				try
-				{
+		} else {
+			// if we cannot get the lock load it directly from the KeyStore,
+			// should be fast for a single certificate
+			for (KeyStore store : this.mKeyStores) {
+				try {
 					Certificate cert = store.getCertificate(alias);
-					if (cert != null && cert instanceof X509Certificate)
-					{
-						certificate = (X509Certificate)cert;
+					if (cert != null && cert instanceof X509Certificate) {
+						certificate = (X509Certificate) cert;
 						break;
 					}
-				}
-				catch (KeyStoreException e)
-				{
+				} catch (KeyStoreException e) {
 					e.printStackTrace();
 				}
 			}
@@ -230,11 +199,10 @@ public class TrustedCertificateManager extends Observable
 	 * @return Hashtable mapping aliases to certificates
 	 */
 	@SuppressWarnings("unchecked")
-	public Hashtable<String, X509Certificate> getAllCACertificates()
-	{
+	public Hashtable<String, X509Certificate> getAllCACertificates() {
 		Hashtable<String, X509Certificate> certs;
 		this.mLock.readLock().lock();
-		certs = (Hashtable<String, X509Certificate>)this.mCACerts.clone();
+		certs = (Hashtable<String, X509Certificate>) this.mCACerts.clone();
 		this.mLock.readLock().unlock();
 		return certs;
 	}
@@ -245,14 +213,11 @@ public class TrustedCertificateManager extends Observable
 	 * @param source type to filter certificates
 	 * @return Hashtable mapping aliases to certificates
 	 */
-	public Hashtable<String, X509Certificate> getCACertificates(TrustedCertificateSource source)
-	{
+	public Hashtable<String, X509Certificate> getCACertificates(TrustedCertificateSource source) {
 		Hashtable<String, X509Certificate> certs = new Hashtable<String, X509Certificate>();
 		this.mLock.readLock().lock();
-		for (String alias : this.mCACerts.keySet())
-		{
-			if (alias.startsWith(source.getPrefix()))
-			{
+		for (String alias : this.mCACerts.keySet()) {
+			if (alias.startsWith(source.getPrefix())) {
 				certs.put(alias, this.mCACerts.get(alias));
 			}
 		}

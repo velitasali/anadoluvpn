@@ -22,9 +22,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.tabs.TabLayout;
-
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.logic.TrustedCertificateManager;
@@ -34,15 +38,7 @@ import org.strongswan.android.ui.CertificateDeleteConfirmationDialog.OnCertifica
 
 import java.security.KeyStore;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
-public class TrustedCertificatesActivity extends AppCompatActivity implements TrustedCertificateListFragment.OnTrustedCertificateSelectedListener, OnCertificateDeleteListener
-{
+public class TrustedCertificatesActivity extends AppCompatActivity implements TrustedCertificateListFragment.OnTrustedCertificateSelectedListener, OnCertificateDeleteListener {
 	public static final String SELECT_CERTIFICATE = "com.velitasali.android.vpn.action.SELECT_CERTIFICATE";
 	private static final String DIALOG_TAG = "Dialog";
 	private static final int IMPORT_CERTIFICATE = 0;
@@ -51,8 +47,7 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 	private boolean mSelect;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.trusted_certificates_activity);
 
@@ -61,37 +56,32 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 
 		mAdapter = new TrustedCertificatesPagerAdapter(getSupportFragmentManager(), this);
 
-		mPager = (ViewPager)findViewById(R.id.viewpager);
+		mPager = (ViewPager) findViewById(R.id.viewpager);
 		mPager.setAdapter(mAdapter);
 
-		TabLayout tabs = (TabLayout)findViewById(R.id.tabs);
+		TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
 		tabs.setupWithViewPager(mPager);
 
 		mSelect = SELECT_CERTIFICATE.equals(getIntent().getAction());
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
+	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.certificates, menu);
 		return true;
 	}
 
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu)
-	{
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
-		{
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
 			menu.removeItem(R.id.menu_import_certificate);
 		}
 		return true;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 			case android.R.id.home:
 				finish();
 				return true;
@@ -107,13 +97,10 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
-		switch (requestCode)
-		{
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
 			case IMPORT_CERTIFICATE:
-				if (resultCode == Activity.RESULT_OK)
-				{
+				if (resultCode == Activity.RESULT_OK) {
 					reloadCertificates();
 				}
 				return;
@@ -122,18 +109,14 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 	}
 
 	@Override
-	public void onTrustedCertificateSelected(TrustedCertificateEntry selected)
-	{
-		if (mSelect)
-		{
+	public void onTrustedCertificateSelected(TrustedCertificateEntry selected) {
+		if (mSelect) {
 			/* the user selected a certificate, return to calling activity */
 			Intent intent = new Intent();
 			intent.putExtra(VpnProfileDataSource.KEY_CERTIFICATE, selected.getAlias());
 			setResult(Activity.RESULT_OK, intent);
 			finish();
-		}
-		else if (mAdapter.getSource(mPager.getCurrentItem()) == TrustedCertificateSource.LOCAL)
-		{
+		} else if (mAdapter.getSource(mPager.getCurrentItem()) == TrustedCertificateSource.LOCAL) {
 			Bundle args = new Bundle();
 			args.putString(CertificateDeleteConfirmationDialog.ALIAS, selected.getAlias());
 			CertificateDeleteConfirmationDialog dialog = new CertificateDeleteConfirmationDialog();
@@ -143,32 +126,25 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 	}
 
 	@Override
-	public void onDelete(String alias)
-	{
-		try
-		{
+	public void onDelete(String alias) {
+		try {
 			KeyStore store = KeyStore.getInstance("LocalCertificateStore");
 			store.load(null, null);
 			store.deleteEntry(alias);
 			reloadCertificates();
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void reloadCertificates()
-	{
+	private void reloadCertificates() {
 		TrustedCertificateManager.getInstance().reset();
 	}
 
-	public static class TrustedCertificatesPagerAdapter extends FragmentPagerAdapter
-	{
+	public static class TrustedCertificatesPagerAdapter extends FragmentPagerAdapter {
 		private TrustedCertificatesTab mTabs[];
 
-		public TrustedCertificatesPagerAdapter(FragmentManager fm, Context context)
-		{
+		public TrustedCertificatesPagerAdapter(FragmentManager fm, Context context) {
 			super(fm);
 			mTabs = new TrustedCertificatesTab[]{
 				new TrustedCertificatesTab(context.getString(R.string.system_tab), TrustedCertificateSource.SYSTEM),
@@ -178,25 +154,21 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 		}
 
 		@Override
-		public int getCount()
-		{
+		public int getCount() {
 			return mTabs.length;
 		}
 
 		@Override
-		public CharSequence getPageTitle(int position)
-		{
+		public CharSequence getPageTitle(int position) {
 			return mTabs[position].getTitle();
 		}
 
-		public TrustedCertificateSource getSource(int position)
-		{
+		public TrustedCertificateSource getSource(int position) {
 			return mTabs[position].getSource();
 		}
 
 		@Override
-		public Fragment getItem(int position)
-		{
+		public Fragment getItem(int position) {
 			TrustedCertificateListFragment fragment = new TrustedCertificateListFragment();
 			Bundle args = new Bundle();
 			args.putSerializable(TrustedCertificateListFragment.EXTRA_CERTIFICATE_SOURCE, mTabs[position].getSource());
@@ -205,24 +177,20 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 		}
 	}
 
-	public static class TrustedCertificatesTab
-	{
+	public static class TrustedCertificatesTab {
 		private final String mTitle;
 		private final TrustedCertificateSource mSource;
 
-		public TrustedCertificatesTab(String title, TrustedCertificateSource source)
-		{
+		public TrustedCertificatesTab(String title, TrustedCertificateSource source) {
 			mTitle = title;
 			mSource = source;
 		}
 
-		public String getTitle()
-		{
+		public String getTitle() {
 			return mTitle;
 		}
 
-		public TrustedCertificateSource getSource()
-		{
+		public TrustedCertificateSource getSource() {
 			return mSource;
 		}
 	}

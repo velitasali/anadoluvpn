@@ -15,8 +15,7 @@
 
 package org.strongswan.android.logic.imc.attributes;
 
-public enum PrivateEnterpriseNumber
-{
+public enum PrivateEnterpriseNumber {
 	IETF(0x000000),
 	GOOGLE(0x002B79),
 	ITA(0x00902a),
@@ -30,8 +29,7 @@ public enum PrivateEnterpriseNumber
 	 *
 	 * @param value numeric value
 	 */
-	private PrivateEnterpriseNumber(int value)
-	{
+	private PrivateEnterpriseNumber(int value) {
 		mValue = value;
 	}
 
@@ -40,8 +38,7 @@ public enum PrivateEnterpriseNumber
 	 *
 	 * @return numeric value
 	 */
-	public int getValue()
-	{
+	public int getValue() {
 		return mValue;
 	}
 
@@ -51,12 +48,9 @@ public enum PrivateEnterpriseNumber
 	 * @param value numeric value
 	 * @return the enum entry or null
 	 */
-	public static PrivateEnterpriseNumber fromValue(int value)
-	{
-		for (PrivateEnterpriseNumber pen : PrivateEnterpriseNumber.values())
-		{
-			if (pen.mValue == value)
-			{
+	public static PrivateEnterpriseNumber fromValue(int value) {
+		for (PrivateEnterpriseNumber pen : PrivateEnterpriseNumber.values()) {
+			if (pen.mValue == value) {
 				return pen;
 			}
 		}

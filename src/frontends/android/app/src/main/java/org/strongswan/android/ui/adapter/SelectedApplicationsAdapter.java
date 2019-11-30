@@ -20,28 +20,21 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-import android.widget.ImageView;
-import android.widget.TextView;
-
+import android.widget.*;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.ui.widget.CheckableLinearLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectedApplicationsAdapter extends BaseAdapter implements Filterable
-{
+public class SelectedApplicationsAdapter extends BaseAdapter implements Filterable {
 	private Context mContext;
 	private final Object mLock = new Object();
 	private List<SelectedApplicationEntry> mData;
 	private List<SelectedApplicationEntry> mDataFiltered;
 	private SelectedApplicationsFilter mFilter;
 
-	public SelectedApplicationsAdapter(Context context)
-	{
+	public SelectedApplicationsAdapter(Context context) {
 		mContext = context;
 		mData = mDataFiltered = new ArrayList<>();
 	}
@@ -51,14 +44,11 @@ public class SelectedApplicationsAdapter extends BaseAdapter implements Filterab
 	 *
 	 * @param data the new data (null to clear)
 	 */
-	public void setData(List<SelectedApplicationEntry> data)
-	{
-		synchronized (mLock)
-		{
+	public void setData(List<SelectedApplicationEntry> data) {
+		synchronized (mLock) {
 			mData.clear();
 			mDataFiltered = mData;
-			if (data != null)
-			{
+			if (data != null) {
 				mData.addAll(data);
 			}
 		}
@@ -66,82 +56,65 @@ public class SelectedApplicationsAdapter extends BaseAdapter implements Filterab
 	}
 
 	@Override
-	public int getCount()
-	{
+	public int getCount() {
 		return mDataFiltered.size();
 	}
 
 	@Override
-	public SelectedApplicationEntry getItem(int position)
-	{
+	public SelectedApplicationEntry getItem(int position) {
 		return mDataFiltered.get(position);
 	}
 
 	@Override
-	public long getItemId(int position)
-	{
+	public long getItemId(int position) {
 		return mDataFiltered.get(position).toString().hashCode();
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		View view;
-		if (convertView != null)
-		{
+		if (convertView != null) {
 			view = convertView;
-		}
-		else
-		{
+		} else {
 			LayoutInflater inflater = LayoutInflater.from(mContext);
 			view = inflater.inflate(R.layout.selected_application_item, parent, false);
 		}
 		SelectedApplicationEntry item = getItem(position);
-		CheckableLinearLayout checkable = (CheckableLinearLayout)view;
+		CheckableLinearLayout checkable = (CheckableLinearLayout) view;
 		checkable.setChecked(item.isSelected());
-		ImageView icon = (ImageView)view.findViewById(R.id.app_icon);
+		ImageView icon = (ImageView) view.findViewById(R.id.app_icon);
 		icon.setImageDrawable(item.getIcon());
-		TextView text = (TextView)view.findViewById(R.id.app_name);
+		TextView text = (TextView) view.findViewById(R.id.app_name);
 		text.setText(item.toString());
 		return view;
 	}
 
 	@Override
-	public Filter getFilter()
-	{
-		if (mFilter == null)
-		{
+	public Filter getFilter() {
+		if (mFilter == null) {
 			mFilter = new SelectedApplicationsFilter();
 		}
 		return mFilter;
 	}
 
-	private class SelectedApplicationsFilter extends Filter
-	{
+	private class SelectedApplicationsFilter extends Filter {
 
 		@Override
-		protected FilterResults performFiltering(CharSequence constraint)
-		{
+		protected FilterResults performFiltering(CharSequence constraint) {
 			FilterResults results = new FilterResults();
 			ArrayList<SelectedApplicationEntry> data, filtered;
 
-			synchronized (mLock)
-			{
+			synchronized (mLock) {
 				data = new ArrayList<>(mData);
 			}
 
-			if (TextUtils.isEmpty(constraint))
-			{
+			if (TextUtils.isEmpty(constraint)) {
 				filtered = data;
-			}
-			else
-			{
+			} else {
 				String filter = constraint.toString().toLowerCase();
 				filtered = new ArrayList<>();
-				for (SelectedApplicationEntry entry : data)
-				{
-					if (entry.toString().toLowerCase().contains(filter))
-					{
+				for (SelectedApplicationEntry entry : data) {
+					if (entry.toString().toLowerCase().contains(filter)) {
 						filtered.add(entry);
 					}
 				}
@@ -153,9 +126,8 @@ public class SelectedApplicationsAdapter extends BaseAdapter implements Filterab
 
 		@Override
 		@SuppressWarnings("unchecked")
-		protected void publishResults(CharSequence constraint, FilterResults results)
-		{
-			mDataFiltered = (List<SelectedApplicationEntry>)results.values;
+		protected void publishResults(CharSequence constraint, FilterResults results) {
+			mDataFiltered = (List<SelectedApplicationEntry>) results.values;
 			notifyDataSetChanged();
 		}
 	}

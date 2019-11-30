@@ -15,24 +15,15 @@
 
 package org.strongswan.android.logic.imc;
 
+import android.content.Context;
 import org.strongswan.android.logic.imc.attributes.Attribute;
 import org.strongswan.android.logic.imc.attributes.AttributeType;
-import org.strongswan.android.logic.imc.collectors.Collector;
-import org.strongswan.android.logic.imc.collectors.DeviceIdCollector;
-import org.strongswan.android.logic.imc.collectors.InstalledPackagesCollector;
-import org.strongswan.android.logic.imc.collectors.PortFilterCollector;
-import org.strongswan.android.logic.imc.collectors.ProductInformationCollector;
-import org.strongswan.android.logic.imc.collectors.SettingsCollector;
-import org.strongswan.android.logic.imc.collectors.StringVersionCollector;
+import org.strongswan.android.logic.imc.collectors.*;
 
-import android.content.Context;
-
-public class AndroidImc
-{
+public class AndroidImc {
 	private final Context mContext;
 
-	public AndroidImc(Context context)
-	{
+	public AndroidImc(Context context) {
 		mContext = context;
 	}
 
@@ -41,11 +32,10 @@ public class AndroidImc
 	 * the given vendor specific attribute type.
 	 *
 	 * @param vendor vendor ID
-	 * @param type vendor specific attribute type
+	 * @param type   vendor specific attribute type
 	 * @return encoded attribute, or null if not available or failed
 	 */
-	public byte[] getMeasurement(int vendor, int type)
-	{
+	public byte[] getMeasurement(int vendor, int type) {
 		return getMeasurement(vendor, type, null);
 	}
 
@@ -54,17 +44,15 @@ public class AndroidImc
 	 * the given vendor specific attribute type.
 	 *
 	 * @param vendor vendor ID
-	 * @param type vendor specific attribute type
-	 * @param args optional arguments for a measurement
+	 * @param type   vendor specific attribute type
+	 * @param args   optional arguments for a measurement
 	 * @return encoded attribute, or null if not available or failed
 	 */
-	public byte[] getMeasurement(int vendor, int type, String[] args)
-	{
+	public byte[] getMeasurement(int vendor, int type, String[] args) {
 		AttributeType attributeType = AttributeType.fromValues(vendor, type);
 		Collector collector = null;
 
-		switch (attributeType)
-		{
+		switch (attributeType) {
 			case IETF_PRODUCT_INFORMATION:
 				collector = new ProductInformationCollector();
 				break;
@@ -86,11 +74,9 @@ public class AndroidImc
 			default:
 				break;
 		}
-		if (collector != null)
-		{
+		if (collector != null) {
 			Attribute attribute = collector.getMeasurement();
-			if (attribute != null)
-			{
+			if (attribute != null) {
 				return attribute.getEncoding();
 			}
 		}

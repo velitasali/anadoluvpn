@@ -18,13 +18,8 @@ package org.strongswan.android.logic;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.SystemClock;
-
+import android.os.*;
+import androidx.core.content.ContextCompat;
 import com.velitasali.android.vpn.R;
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfileDataSource;
@@ -40,10 +35,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import androidx.core.content.ContextCompat;
-
-public class VpnStateService extends Service
-{
+public class VpnStateService extends Service {
 	private final HashSet<VpnStateListener> mListeners = new HashSet<>();
 	private final IBinder mBinder = new LocalBinder();
 	private long mConnectionID = 0;
@@ -61,16 +53,14 @@ public class VpnStateService extends Service
 	private long mRetryTimeout;
 	private long mRetryIn;
 
-	public enum State
-	{
+	public enum State {
 		DISABLED,
 		CONNECTING,
 		CONNECTED,
 		DISCONNECTING,
 	}
 
-	public enum ErrorState
-	{
+	public enum ErrorState {
 		NO_ERROR,
 		AUTH_FAILED,
 		PEER_AUTH_FAILED,
@@ -85,8 +75,7 @@ public class VpnStateService extends Service
 	 * Listener interface for bound clients that are interested in changes to
 	 * this Service.
 	 */
-	public interface VpnStateListener
-	{
+	public interface VpnStateListener {
 		public void stateChanged();
 	}
 
@@ -94,31 +83,26 @@ public class VpnStateService extends Service
 	 * Simple Binder that allows to directly access this Service class itself
 	 * after binding to it.
 	 */
-	public class LocalBinder extends Binder
-	{
-		public VpnStateService getService()
-		{
+	public class LocalBinder extends Binder {
+		public VpnStateService getService() {
 			return VpnStateService.this;
 		}
 	}
 
 	@Override
-	public void onCreate()
-	{
+	public void onCreate() {
 		/* this handler allows us to notify listeners from the UI thread and
 		 * not from the threads that actually report any state changes */
 		mHandler = new RetryHandler(this);
 	}
 
 	@Override
-	public IBinder onBind(Intent intent)
-	{
+	public IBinder onBind(Intent intent) {
 		return mBinder;
 	}
 
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 	}
 
 	/**
@@ -127,8 +111,7 @@ public class VpnStateService extends Service
 	 *
 	 * @param listener listener to register
 	 */
-	public void registerListener(VpnStateListener listener)
-	{
+	public void registerListener(VpnStateListener listener) {
 		mListeners.add(listener);
 	}
 
@@ -137,8 +120,7 @@ public class VpnStateService extends Service
 	 *
 	 * @param listener listener to unregister
 	 */
-	public void unregisterListener(VpnStateListener listener)
-	{
+	public void unregisterListener(VpnStateListener listener) {
 		mListeners.remove(listener);
 	}
 
@@ -147,40 +129,38 @@ public class VpnStateService extends Service
 	 *
 	 * @return profile
 	 */
-	public VpnProfile getProfile()
-	{	/* only updated from the main thread so no synchronization needed */
+	public VpnProfile getProfile() {    /* only updated from the main thread so no synchronization needed */
 		return mProfile;
 	}
 
 	/**
 	 * Get the current connection ID.  May be used to track which state
 	 * changes have already been handled.
-	 *
+	 * <p>
 	 * Is increased when startConnection() is called.
 	 *
 	 * @return connection ID
 	 */
-	public long getConnectionID()
-	{	/* only updated from the main thread so no synchronization needed */
+	public long getConnectionID() {    /* only updated from the main thread so no synchronization needed */
 		return mConnectionID;
 	}
 
 	/**
 	 * Get the total number of seconds until there is an automatic retry to reconnect.
+	 *
 	 * @return total number of seconds until the retry
 	 */
-	public int getRetryTimeout()
-	{
-		return (int)(mRetryTimeout / 1000);
+	public int getRetryTimeout() {
+		return (int) (mRetryTimeout / 1000);
 	}
 
 	/**
 	 * Get the number of seconds until there is an automatic retry to reconnect.
+	 *
 	 * @return number of seconds until the retry
 	 */
-	public int getRetryIn()
-	{
-		return (int)(mRetryIn / 1000);
+	public int getRetryIn() {
+		return (int) (mRetryIn / 1000);
 	}
 
 	/**
@@ -188,8 +168,7 @@ public class VpnStateService extends Service
 	 *
 	 * @return state
 	 */
-	public State getState()
-	{	/* only updated from the main thread so no synchronization needed */
+	public State getState() {    /* only updated from the main thread so no synchronization needed */
 		return mState;
 	}
 
@@ -198,8 +177,7 @@ public class VpnStateService extends Service
 	 *
 	 * @return error
 	 */
-	public ErrorState getErrorState()
-	{	/* only updated from the main thread so no synchronization needed */
+	public ErrorState getErrorState() {    /* only updated from the main thread so no synchronization needed */
 		return mError;
 	}
 
@@ -208,17 +186,12 @@ public class VpnStateService extends Service
 	 *
 	 * @return error description text id
 	 */
-	public int getErrorText()
-	{
-		switch (mError)
-		{
+	public int getErrorText() {
+		switch (mError) {
 			case AUTH_FAILED:
-				if (mImcState == ImcState.BLOCK)
-				{
+				if (mImcState == ImcState.BLOCK) {
 					return R.string.error_assessment_failed;
-				}
-				else
-				{
+				} else {
 					return R.string.error_auth_failed;
 				}
 			case PEER_AUTH_FAILED:
@@ -241,8 +214,7 @@ public class VpnStateService extends Service
 	 *
 	 * @return imc state
 	 */
-	public ImcState getImcState()
-	{	/* only updated from the main thread so no synchronization needed */
+	public ImcState getImcState() {    /* only updated from the main thread so no synchronization needed */
 		return mImcState;
 	}
 
@@ -251,8 +223,7 @@ public class VpnStateService extends Service
 	 *
 	 * @return read-only list of instructions
 	 */
-	public List<RemediationInstruction> getRemediationInstructions()
-	{	/* only updated from the main thread so no synchronization needed */
+	public List<RemediationInstruction> getRemediationInstructions() {    /* only updated from the main thread so no synchronization needed */
 		return Collections.unmodifiableList(mRemediationInstructions);
 	}
 
@@ -261,8 +232,7 @@ public class VpnStateService extends Service
 	 * VpnService is not stopped but it is reset so new connections can be
 	 * started.
 	 */
-	public void disconnect()
-	{
+	public void disconnect() {
 		/* reset any potential retry timer and error state */
 		resetRetryTimer();
 		setError(ErrorState.NO_ERROR);
@@ -281,29 +251,25 @@ public class VpnStateService extends Service
 
 	/**
 	 * Connect (or reconnect) a profile
+	 *
 	 * @param profileInfo optional profile info (basically the UUID and password), taken from the
 	 *                    previous profile if null
 	 * @param fromScratch true if this is a manual retry/reconnect or a completely new connection
 	 */
-	public void connect(Bundle profileInfo, boolean fromScratch)
-	{
+	public void connect(Bundle profileInfo, boolean fromScratch) {
 		/* we assume we have the necessary permission */
 		Context context = getApplicationContext();
 		Intent intent = new Intent(context, CharonVpnService.class);
-		if (profileInfo == null)
-		{
+		if (profileInfo == null) {
 			profileInfo = new Bundle();
 			profileInfo.putString(VpnProfileDataSource.KEY_UUID, mProfile.getUUID().toString());
 			/* pass the previous password along */
 			profileInfo.putString(VpnProfileDataSource.KEY_PASSWORD, mProfile.getPassword());
 		}
-		if (fromScratch)
-		{
+		if (fromScratch) {
 			/* reset if this is a manual retry or a new connection */
 			mTimeoutProvider.reset();
-		}
-		else
-		{	/* mark this as an automatic retry */
+		} else {    /* mark this as an automatic retry */
 			profileInfo.putBoolean(CharonVpnService.KEY_IS_RETRY, true);
 		}
 		intent.putExtras(profileInfo);
@@ -313,18 +279,14 @@ public class VpnStateService extends Service
 	/**
 	 * Reconnect to the previous profile.
 	 */
-	public void reconnect()
-	{
-		if (mProfile == null)
-		{
+	public void reconnect() {
+		if (mProfile == null) {
 			return;
 		}
-		if (mProfile.getVpnType().has(VpnType.VpnTypeFeature.USER_PASS))
-		{
+		if (mProfile.getVpnType().has(VpnType.VpnTypeFeature.USER_PASS)) {
 			if (mProfile.getPassword() == null ||
-				mError == ErrorState.AUTH_FAILED)
-			{	/* show a dialog if we either don't have the password or if it might be the wrong
-				 * one (which is or isn't stored with the profile, let the activity decide)  */
+				mError == ErrorState.AUTH_FAILED) {    /* show a dialog if we either don't have the password or if it might be the wrong
+			 * one (which is or isn't stored with the profile, let the activity decide)  */
 				Intent intent = new Intent(this, VpnProfileControlActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				intent.setAction(VpnProfileControlActivity.START_PROFILE);
@@ -349,24 +311,17 @@ public class VpnStateService extends Service
 	 *
 	 * @param change the state update to perform before notifying listeners, returns true if state changed
 	 */
-	private void notifyListeners(final Callable<Boolean> change)
-	{
+	private void notifyListeners(final Callable<Boolean> change) {
 		mHandler.post(new Runnable() {
 			@Override
-			public void run()
-			{
-				try
-				{
-					if (change.call())
-					{	/* otherwise there is no need to notify the listeners */
-						for (VpnStateListener listener : mListeners)
-						{
+			public void run() {
+				try {
+					if (change.call()) {    /* otherwise there is no need to notify the listeners */
+						for (VpnStateListener listener : mListeners) {
 							listener.stateChanged();
 						}
 					}
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -377,17 +332,15 @@ public class VpnStateService extends Service
 	 * Called when a connection is started.  Sets the currently active VPN
 	 * profile, resets IMC and Error state variables, sets the State to
 	 * CONNECTING, increases the connection ID, and notifies all listeners.
-	 *
+	 * <p>
 	 * May be called from threads other than the main thread.
 	 *
 	 * @param profile current profile
 	 */
-	public void startConnection(final VpnProfile profile)
-	{
+	public void startConnection(final VpnProfile profile) {
 		notifyListeners(new Callable<Boolean>() {
 			@Override
-			public Boolean call() throws Exception
-			{
+			public Boolean call() throws Exception {
 				resetRetryTimer();
 				VpnStateService.this.mConnectionID++;
 				VpnStateService.this.mProfile = profile;
@@ -402,23 +355,19 @@ public class VpnStateService extends Service
 
 	/**
 	 * Update the state and notify all listeners, if changed.
-	 *
+	 * <p>
 	 * May be called from threads other than the main thread.
 	 *
 	 * @param state new state
 	 */
-	public void setState(final State state)
-	{
+	public void setState(final State state) {
 		notifyListeners(new Callable<Boolean>() {
 			@Override
-			public Boolean call() throws Exception
-			{
-				if (state == State.CONNECTED)
-				{	/* reset counter in case there is an error later on */
+			public Boolean call() throws Exception {
+				if (state == State.CONNECTED) {    /* reset counter in case there is an error later on */
 					mTimeoutProvider.reset();
 				}
-				if (VpnStateService.this.mState != state)
-				{
+				if (VpnStateService.this.mState != state) {
 					VpnStateService.this.mState = state;
 					return true;
 				}
@@ -429,25 +378,19 @@ public class VpnStateService extends Service
 
 	/**
 	 * Set the current error state and notify all listeners, if changed.
-	 *
+	 * <p>
 	 * May be called from threads other than the main thread.
 	 *
 	 * @param error error state
 	 */
-	public void setError(final ErrorState error)
-	{
+	public void setError(final ErrorState error) {
 		notifyListeners(new Callable<Boolean>() {
 			@Override
-			public Boolean call() throws Exception
-			{
-				if (VpnStateService.this.mError != error)
-				{
-					if (VpnStateService.this.mError == ErrorState.NO_ERROR)
-					{
+			public Boolean call() throws Exception {
+				if (VpnStateService.this.mError != error) {
+					if (VpnStateService.this.mError == ErrorState.NO_ERROR) {
 						setRetryTimer(error);
-					}
-					else if (error == ErrorState.NO_ERROR)
-					{
+					} else if (error == ErrorState.NO_ERROR) {
 						resetRetryTimer();
 					}
 					VpnStateService.this.mError = error;
@@ -460,25 +403,21 @@ public class VpnStateService extends Service
 
 	/**
 	 * Set the current IMC state and notify all listeners, if changed.
-	 *
+	 * <p>
 	 * Setting the state to UNKNOWN clears all remediation instructions.
-	 *
+	 * <p>
 	 * May be called from threads other than the main thread.
 	 *
 	 * @param state IMC state
 	 */
-	public void setImcState(final ImcState state)
-	{
+	public void setImcState(final ImcState state) {
 		notifyListeners(new Callable<Boolean>() {
 			@Override
-			public Boolean call() throws Exception
-			{
-				if (state == ImcState.UNKNOWN)
-				{
+			public Boolean call() throws Exception {
+				if (state == ImcState.UNKNOWN) {
 					VpnStateService.this.mRemediationInstructions.clear();
 				}
-				if (VpnStateService.this.mImcState != state)
-				{
+				if (VpnStateService.this.mImcState != state) {
 					VpnStateService.this.mImcState = state;
 					return true;
 				}
@@ -490,19 +429,17 @@ public class VpnStateService extends Service
 	/**
 	 * Add the given remediation instruction to the internal list.  Listeners
 	 * are not notified.
-	 *
+	 * <p>
 	 * Instructions are cleared if the IMC state is set to UNKNOWN.
-	 *
+	 * <p>
 	 * May be called from threads other than the main thread.
 	 *
 	 * @param instruction remediation instruction
 	 */
-	public void addRemediationInstruction(final RemediationInstruction instruction)
-	{
+	public void addRemediationInstruction(final RemediationInstruction instruction) {
 		mHandler.post(new Runnable() {
 			@Override
-			public void run()
-			{
+			public void run() {
 				VpnStateService.this.mRemediationInstructions.add(instruction);
 			}
 		});
@@ -511,11 +448,9 @@ public class VpnStateService extends Service
 	/**
 	 * Sets the retry timer
 	 */
-	private void setRetryTimer(ErrorState error)
-	{
+	private void setRetryTimer(ErrorState error) {
 		mRetryTimeout = mRetryIn = mTimeoutProvider.getTimeout(error);
-		if (mRetryTimeout <= 0)
-		{
+		if (mRetryTimeout <= 0) {
 			return;
 		}
 		mHandler.sendMessageAtTime(mHandler.obtainMessage(RETRY_MSG), SystemClock.uptimeMillis() + RETRY_INTERVAL);
@@ -524,8 +459,7 @@ public class VpnStateService extends Service
 	/**
 	 * Reset the retry timer
 	 */
-	private void resetRetryTimer()
-	{
+	private void resetRetryTimer() {
 		mRetryTimeout = 0;
 		mRetryIn = 0;
 	}
@@ -536,33 +470,26 @@ public class VpnStateService extends Service
 	private static class RetryHandler extends Handler {
 		WeakReference<VpnStateService> mService;
 
-		public RetryHandler(VpnStateService service)
-		{
+		public RetryHandler(VpnStateService service) {
 			mService = new WeakReference<>(service);
 		}
 
 		@Override
-		public void handleMessage(Message msg)
-		{
+		public void handleMessage(Message msg) {
 			/* handle retry countdown */
-			if (mService.get().mRetryTimeout <= 0)
-			{
+			if (mService.get().mRetryTimeout <= 0) {
 				return;
 			}
 			mService.get().mRetryIn -= RETRY_INTERVAL;
-			if (mService.get().mRetryIn > 0)
-			{
+			if (mService.get().mRetryIn > 0) {
 				/* calculate next interval before notifying listeners */
 				long next = SystemClock.uptimeMillis() + RETRY_INTERVAL;
 
-				for (VpnStateListener listener : mService.get().mListeners)
-				{
+				for (VpnStateListener listener : mService.get().mListeners) {
 					listener.stateChanged();
 				}
 				sendMessageAtTime(obtainMessage(RETRY_MSG), next);
-			}
-			else
-			{
+			} else {
 				mService.get().connect(null, false);
 			}
 		}
@@ -571,14 +498,11 @@ public class VpnStateService extends Service
 	/**
 	 * Class that handles an exponential backoff for retry timeouts
 	 */
-	private static class RetryTimeoutProvider
-	{
+	private static class RetryTimeoutProvider {
 		private long mRetry;
 
-		private long getBaseTimeout(ErrorState error)
-		{
-			switch (error)
-			{
+		private long getBaseTimeout(ErrorState error) {
+			switch (error) {
 				case AUTH_FAILED:
 					return 10000;
 				case PEER_AUTH_FAILED:
@@ -601,11 +525,11 @@ public class VpnStateService extends Service
 		/**
 		 * Called each time a new retry timeout is started. The timeout increases until reset() is
 		 * called and the base timeout is returned again.
+		 *
 		 * @param error Error state
 		 */
-		public long getTimeout(ErrorState error)
-		{
-			long timeout = (long)(getBaseTimeout(error) * Math.pow(2, mRetry++));
+		public long getTimeout(ErrorState error) {
+			long timeout = (long) (getBaseTimeout(error) * Math.pow(2, mRetry++));
 			/* return the result rounded to seconds */
 			return Math.min((timeout / 1000) * 1000, MAX_RETRY_INTERVAL);
 		}
@@ -613,8 +537,7 @@ public class VpnStateService extends Service
 		/**
 		 * Reset the retry counter.
 		 */
-		public void reset()
-		{
+		public void reset() {
 			mRetry = 0;
 		}
 	}

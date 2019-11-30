@@ -28,33 +28,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Filter;
 import android.widget.ListView;
-
-import com.velitasali.android.vpn.R;
-import org.strongswan.android.data.VpnProfileDataSource;
-import org.strongswan.android.ui.adapter.SelectedApplicationEntry;
-import org.strongswan.android.ui.adapter.SelectedApplicationsAdapter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.ListFragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
+import com.velitasali.android.vpn.R;
+import org.strongswan.android.data.VpnProfileDataSource;
+import org.strongswan.android.ui.adapter.SelectedApplicationEntry;
+import org.strongswan.android.ui.adapter.SelectedApplicationsAdapter;
 
-public class SelectedApplicationsListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Pair<List<SelectedApplicationEntry>, List<String>>>, SearchView.OnQueryTextListener
-{
+import java.util.*;
+
+public class SelectedApplicationsListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Pair<List<SelectedApplicationEntry>, List<String>>>, SearchView.OnQueryTextListener {
 	private SelectedApplicationsAdapter mAdapter;
 	private SortedSet<String> mSelection;
 
 	@Override
-	public void onActivityCreated(@Nullable Bundle savedInstanceState)
-	{
+	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
 
@@ -65,12 +57,9 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 		setListShown(false);
 
 		ArrayList<String> selection;
-		if (savedInstanceState == null)
-		{
+		if (savedInstanceState == null) {
 			selection = getActivity().getIntent().getStringArrayListExtra(VpnProfileDataSource.KEY_SELECTED_APPS_LIST);
-		}
-		else
-		{
+		} else {
 			selection = savedInstanceState.getStringArrayList(VpnProfileDataSource.KEY_SELECTED_APPS_LIST);
 		}
 		mSelection = new TreeSet<>(selection);
@@ -79,8 +68,7 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState)
-	{
+	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putStringArrayList(VpnProfileDataSource.KEY_SELECTED_APPS_LIST, new ArrayList<>(mSelection));
 	}
@@ -88,8 +76,7 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 	/**
 	 * Returns the package names of all selected apps
 	 */
-	public ArrayList<String> getSelectedApplications()
-	{
+	public ArrayList<String> getSelectedApplications() {
 		return new ArrayList<>(mSelection);
 	}
 
@@ -97,17 +84,13 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 	 * Track check state as ListView is unable to do that when using filters
 	 */
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id)
-	{
+	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		SelectedApplicationEntry item = (SelectedApplicationEntry)getListView().getItemAtPosition(position);
+		SelectedApplicationEntry item = (SelectedApplicationEntry) getListView().getItemAtPosition(position);
 		item.setSelected(!item.isSelected());
-		if (item.isSelected())
-		{
+		if (item.isSelected()) {
 			mSelection.add(item.getInfo().packageName);
-		}
-		else
-		{
+		} else {
 			mSelection.remove(item.getInfo().packageName);
 		}
 	}
@@ -115,18 +98,15 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 	/**
 	 * Manually set the check state as ListView is unable to track that when using filters
 	 */
-	private void setCheckState()
-	{
-		for (int i = 0; i < getListView().getCount(); i++)
-		{
+	private void setCheckState() {
+		for (int i = 0; i < getListView().getCount(); i++) {
 			SelectedApplicationEntry item = mAdapter.getItem(i);
 			getListView().setItemChecked(i, item.isSelected());
 		}
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		MenuItem item = menu.add(R.string.search);
 		item.setIcon(android.R.drawable.ic_menu_search);
 		item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -139,78 +119,63 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 	}
 
 	@Override
-	public Loader<Pair<List<SelectedApplicationEntry>, List<String>>> onCreateLoader(int id, Bundle args)
-	{
+	public Loader<Pair<List<SelectedApplicationEntry>, List<String>>> onCreateLoader(int id, Bundle args) {
 		return new InstalledPackagesLoader(getActivity(), mSelection);
 	}
 
 	@Override
-	public void onLoadFinished(Loader<Pair<List<SelectedApplicationEntry>, List<String>>> loader, Pair<List<SelectedApplicationEntry>, List<String>> data)
-	{
+	public void onLoadFinished(Loader<Pair<List<SelectedApplicationEntry>, List<String>>> loader, Pair<List<SelectedApplicationEntry>, List<String>> data) {
 		mAdapter.setData(data.first);
 		mSelection.removeAll(data.second);
 		setCheckState();
 
-		if (isResumed())
-		{
+		if (isResumed()) {
 			setListShown(true);
-		}
-		else
-		{
+		} else {
 			setListShownNoAnimation(true);
 		}
 	}
 
 	@Override
-	public void onLoaderReset(Loader<Pair<List<SelectedApplicationEntry>, List<String>>> loader)
-	{
+	public void onLoaderReset(Loader<Pair<List<SelectedApplicationEntry>, List<String>>> loader) {
 		mAdapter.setData(null);
 	}
 
 	@Override
-	public boolean onQueryTextSubmit(String query)
-	{
+	public boolean onQueryTextSubmit(String query) {
 		return true;
 	}
 
 	@Override
-	public boolean onQueryTextChange(String newText)
-	{
+	public boolean onQueryTextChange(String newText) {
 		String search = TextUtils.isEmpty(newText) ? null : newText;
-		mAdapter.getFilter().filter(search, new Filter.FilterListener()
-		{
+		mAdapter.getFilter().filter(search, new Filter.FilterListener() {
 			@Override
-			public void onFilterComplete(int count)
-			{
+			public void onFilterComplete(int count) {
 				setCheckState();
 			}
 		});
 		return true;
 	}
 
-	public static class InstalledPackagesLoader extends AsyncTaskLoader<Pair<List<SelectedApplicationEntry>, List<String>>>
-	{
+	public static class InstalledPackagesLoader extends AsyncTaskLoader<Pair<List<SelectedApplicationEntry>, List<String>>> {
 		private final PackageManager mPackageManager;
 		private final SortedSet<String> mSelection;
 		private Pair<List<SelectedApplicationEntry>, List<String>> mData;
 
-		public InstalledPackagesLoader(Context context, SortedSet<String> selection)
-		{
+		public InstalledPackagesLoader(Context context, SortedSet<String> selection) {
 			super(context);
 			mPackageManager = context.getPackageManager();
 			mSelection = selection;
 		}
 
 		@Override
-		public Pair<List<SelectedApplicationEntry>, List<String>> loadInBackground()
-		{
+		public Pair<List<SelectedApplicationEntry>, List<String>> loadInBackground() {
 			List<SelectedApplicationEntry> apps = new ArrayList<>();
 			SortedSet<String> seen = new TreeSet<>();
-			for (ApplicationInfo info : mPackageManager.getInstalledApplications(PackageManager.GET_META_DATA))
-			{
-				/* skip apps that can't access the network anyway */
-				if (mPackageManager.checkPermission(Manifest.permission.INTERNET, info.packageName) == PackageManager.PERMISSION_GRANTED)
-				{
+			for (ApplicationInfo info : mPackageManager.getInstalledApplications(PackageManager.GET_META_DATA)) {
+				// skip apps that can't access the network anyway
+				if (mPackageManager.checkPermission(Manifest.permission.INTERNET, info.packageName) == PackageManager.PERMISSION_GRANTED) {
 					SelectedApplicationEntry entry = new SelectedApplicationEntry(mPackageManager, info);
 					entry.setSelected(mSelection.contains(info.packageName));
 					apps.add(entry);
@@ -218,12 +183,10 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 				}
 			}
 			Collections.sort(apps);
-			/* check for selected packages that don't exist anymore */
+			// check for selected packages that don't exist anymore
 			List<String> missing = new ArrayList<>();
-			for (String pkg : mSelection)
-			{
-				if (!seen.contains(pkg))
-				{
+			for (String pkg : mSelection) {
+				if (!seen.contains(pkg)) {
 					missing.add(pkg);
 				}
 			}
@@ -231,36 +194,31 @@ public class SelectedApplicationsListFragment extends ListFragment implements Lo
 		}
 
 		@Override
-		protected void onStartLoading()
-		{
-			if (mData != null)
-			{	/* if we have data ready, deliver it directly */
+		protected void onStartLoading() {
+			if (mData != null) {
+				// if we have data ready, deliver it directly
 				deliverResult(mData);
 			}
-			if (takeContentChanged() || mData == null)
-			{
+			if (takeContentChanged() || mData == null) {
 				forceLoad();
 			}
 		}
 
 		@Override
-		public void deliverResult(Pair<List<SelectedApplicationEntry>, List<String>> data)
-		{
-			if (isReset())
-			{
+		public void deliverResult(Pair<List<SelectedApplicationEntry>, List<String>> data) {
+			if (isReset()) {
 				return;
 			}
 			mData = data;
-			if (isStarted())
-			{	/* if it is started we deliver the data directly,
-				 * otherwise this is handled in onStartLoading */
+			if (isStarted()) {
+				// if it is started we deliver the data directly,
+				// otherwise this is handled in onStartLoading
 				super.deliverResult(data);
 			}
 		}
 
 		@Override
-		protected void onReset()
-		{
+		protected void onReset() {
 			mData = null;
 			super.onReset();
 		}

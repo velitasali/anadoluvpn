@@ -18,41 +18,34 @@ package org.strongswan.android.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-
-import org.strongswan.android.data.VpnProfileDataSource;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import org.strongswan.android.data.VpnProfileDataSource;
 
-public class SelectedApplicationsActivity extends AppCompatActivity
-{
+public class SelectedApplicationsActivity extends AppCompatActivity {
 	private static final String LIST_TAG = "ApplicationList";
 	private SelectedApplicationsListFragment mApps;
 
 	@Override
-	protected void onCreate(@Nullable Bundle savedInstanceState)
-	{
+	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
 
 		FragmentManager fm = getSupportFragmentManager();
-		mApps = (SelectedApplicationsListFragment)fm.findFragmentByTag(LIST_TAG);
-		if (mApps == null)
-		{
+		mApps = (SelectedApplicationsListFragment) fm.findFragmentByTag(LIST_TAG);
+		if (mApps == null) {
 			mApps = new SelectedApplicationsListFragment();
 			fm.beginTransaction().add(android.R.id.content, mApps, LIST_TAG).commit();
 		}
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 			case android.R.id.home:
 				prepareResult();
 				finish();
@@ -62,14 +55,12 @@ public class SelectedApplicationsActivity extends AppCompatActivity
 	}
 
 	@Override
-	public void onBackPressed()
-	{
+	public void onBackPressed() {
 		prepareResult();
 		super.onBackPressed();
 	}
 
-	private void prepareResult()
-	{
+	private void prepareResult() {
 		Intent data = new Intent();
 		data.putExtra(VpnProfileDataSource.KEY_SELECTED_APPS_LIST, mApps.getSelectedApplications());
 		setResult(RESULT_OK, data);

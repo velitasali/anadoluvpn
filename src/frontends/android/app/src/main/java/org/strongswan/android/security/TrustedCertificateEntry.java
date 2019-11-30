@@ -24,8 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class TrustedCertificateEntry implements Comparable<TrustedCertificateEntry>
-{
+public class TrustedCertificateEntry implements Comparable<TrustedCertificateEntry> {
 	private final X509Certificate mCert;
 	private final String mAlias;
 	private String mSubjectPrimary;
@@ -36,44 +35,32 @@ public class TrustedCertificateEntry implements Comparable<TrustedCertificateEnt
 	 * Create an entry for certificate lists.
 	 *
 	 * @param alias alias of the certificate (as used in the KeyStore)
-	 * @param cert certificate associated with that alias
+	 * @param cert  certificate associated with that alias
 	 */
-	public TrustedCertificateEntry(String alias, X509Certificate cert)
-	{
+	public TrustedCertificateEntry(String alias, X509Certificate cert) {
 		mCert = cert;
 		mAlias = alias;
 
-		try
-		{
+		try {
 			SslCertificate ssl = new SslCertificate(mCert);
 			String o = ssl.getIssuedTo().getOName();
 			String ou = ssl.getIssuedTo().getUName();
 			String cn = ssl.getIssuedTo().getCName();
-			if (!o.isEmpty())
-			{
+			if (!o.isEmpty()) {
 				mSubjectPrimary = o;
-				if (!cn.isEmpty())
-				{
+				if (!cn.isEmpty()) {
 					mSubjectSecondary = cn;
-				}
-				else if (!ou.isEmpty())
-				{
+				} else if (!ou.isEmpty()) {
 					mSubjectSecondary = ou;
 				}
-			}
-			else if (!cn.isEmpty())
-			{
+			} else if (!cn.isEmpty()) {
 				mSubjectPrimary = cn;
-			}
-			else
-			{
+			} else {
 				mSubjectPrimary = ssl.getIssuedTo().getDName();
 			}
-		}
-		catch (NullPointerException ex)
-		{
-			/* this has been seen in Play Console for certificates for which notBefore apparently
-			 * can't be parsed (which SslCertificate() does) */
+		} catch (NullPointerException ex) {
+			// this has been seen in Play Console for certificates for which notBefore apparently
+			// can't be parsed (which SslCertificate() does)
 			mSubjectPrimary = cert.getSubjectDN().getName();
 		}
 	}
@@ -84,8 +71,7 @@ public class TrustedCertificateEntry implements Comparable<TrustedCertificateEnt
 	 *
 	 * @return the main subject
 	 */
-	public String getSubjectPrimary()
-	{
+	public String getSubjectPrimary() {
 		return mSubjectPrimary;
 	}
 
@@ -95,8 +81,7 @@ public class TrustedCertificateEntry implements Comparable<TrustedCertificateEnt
 	 *
 	 * @return the secondary subject
 	 */
-	public String getSubjectSecondary()
-	{
+	public String getSubjectSecondary() {
 		return mSubjectSecondary;
 	}
 
@@ -105,30 +90,23 @@ public class TrustedCertificateEntry implements Comparable<TrustedCertificateEnt
 	 *
 	 * @return sorted list of selected SANs
 	 */
-	public List<String> getSubjectAltNames()
-	{
+	public List<String> getSubjectAltNames() {
 		List<String> list = new ArrayList<>();
-		try
-		{
+		try {
 			Collection<List<?>> sans = mCert.getSubjectAlternativeNames();
-			if (sans != null)
-			{
-				for (List<?> san : sans)
-				{
-					switch ((Integer)san.get(0))
-					{
-						case 1: /* rfc822Name */
-						case 2: /* dnSName */
-						case 7: /* iPAddress */
-							list.add((String)san.get(1));
+			if (sans != null) {
+				for (List<?> san : sans) {
+					switch ((Integer) san.get(0)) {
+						case 1: // rfc822Name
+						case 2: // dnSName
+						case 7: // iPAddress
+							list.add((String) san.get(1));
 							break;
 					}
 				}
 			}
 			Collections.sort(list);
-		}
-		catch(CertificateParsingException ex)
-		{
+		} catch (CertificateParsingException ex) {
 			ex.printStackTrace();
 		}
 		return list;
@@ -139,8 +117,7 @@ public class TrustedCertificateEntry implements Comparable<TrustedCertificateEnt
 	 *
 	 * @return KeyStore alias of this certificate
 	 */
-	public String getAlias()
-	{
+	public String getAlias() {
 		return mAlias;
 	}
 
@@ -149,19 +126,16 @@ public class TrustedCertificateEntry implements Comparable<TrustedCertificateEnt
 	 *
 	 * @return certificate
 	 */
-	public X509Certificate getCertificate()
-	{
+	public X509Certificate getCertificate() {
 		return mCert;
 	}
 
 	@Override
-	public String toString()
-	{	/* combination of both subject lines, used for filtering lists */
-		if (mString == null)
-		{
+	public String toString() {
+		// combination of both subject lines, used for filtering lists
+		if (mString == null) {
 			mString = mSubjectPrimary;
-			if (!mSubjectSecondary.isEmpty())
-			{
+			if (!mSubjectSecondary.isEmpty()) {
 				mString += ", " + mSubjectSecondary;
 			}
 		}
@@ -169,11 +143,9 @@ public class TrustedCertificateEntry implements Comparable<TrustedCertificateEnt
 	}
 
 	@Override
-	public int compareTo(TrustedCertificateEntry another)
-	{
+	public int compareTo(TrustedCertificateEntry another) {
 		int diff = mSubjectPrimary.compareToIgnoreCase(another.mSubjectPrimary);
-		if (diff == 0)
-		{
+		if (diff == 0) {
 			diff = mSubjectSecondary.compareToIgnoreCase(another.mSubjectSecondary);
 		}
 		return diff;
