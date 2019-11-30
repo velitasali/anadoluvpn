@@ -59,7 +59,7 @@ public class StringVersionAttribute implements Attribute {
 		BufferedByteWriter writer = new BufferedByteWriter();
 		writer.putLen8(mVersionNumber.getBytes());
 		writer.putLen8(mBuildNumber.getBytes());
-		/* we don't provide a configuration number */
+		// we don't provide a configuration number
 		writer.put((byte) 0);
 		return writer.toByteArray();
 	}

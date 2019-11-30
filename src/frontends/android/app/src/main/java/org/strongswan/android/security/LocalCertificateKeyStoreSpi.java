@@ -60,8 +60,8 @@ public class LocalCertificateKeyStoreSpi extends KeyStoreSpi {
 
 	@Override
 	public void engineSetCertificateEntry(String alias, Certificate cert) throws KeyStoreException {
-		/* we ignore the given alias as the store calculates it on its own,
-		 * duplicates are replaced */
+		// we ignore the given alias as the store calculates it on its own,
+		// duplicates are replaced
 		if (!mStore.addCertificate(cert)) {
 			throw new KeyStoreException();
 		}

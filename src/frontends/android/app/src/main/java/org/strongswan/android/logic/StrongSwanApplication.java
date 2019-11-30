@@ -63,6 +63,7 @@ public class StrongSwanApplication extends Application {
 			System.loadLibrary("charon");
 			System.loadLibrary("ipsec");
 		}
+
 		System.loadLibrary("androidbridge");
 	}
 }

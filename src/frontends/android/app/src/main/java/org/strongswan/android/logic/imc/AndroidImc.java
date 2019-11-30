@@ -71,14 +71,12 @@ public class AndroidImc {
 			case ITA_DEVICE_ID:
 				collector = new DeviceIdCollector(mContext);
 				break;
-			default:
-				break;
 		}
 		if (collector != null) {
 			Attribute attribute = collector.getMeasurement();
-			if (attribute != null) {
+
+			if (attribute != null)
 				return attribute.getEncoding();
-			}
 		}
 		return null;
 	}

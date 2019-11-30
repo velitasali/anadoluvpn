@@ -187,7 +187,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 			openIntent.setType("*/*");
 			try {
 				startActivityForResult(openIntent, OPEN_DOCUMENT);
-			} catch (ActivityNotFoundException e) {    /* some devices are unable to browse for files */
+			} catch (ActivityNotFoundException e) {
+				// some devices are unable to browse for files */
 				finish();
 				return;
 			}
@@ -247,7 +248,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode) {
 			case INSTALL_PKCS12:
-				if (resultCode == Activity.RESULT_OK) {    /* no need to import twice */
+				if (resultCode == Activity.RESULT_OK) {
+					// no need to import twice */
 					mImportUserCert.setEnabled(false);
 					mSelectUserCert.performClick();
 				}
@@ -329,7 +331,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 		mRemoteCertificate.setVisibility(mProfile.Certificate != null ? View.VISIBLE : View.GONE);
 		mImportUserCert.setVisibility(mProfile.PKCS12 != null ? View.VISIBLE : View.GONE);
 
-		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE)) {    /* try to load an existing certificate with the default name */
+		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE)) {
+			// try to load an existing certificate with the default name
 			if (mUserCertLoading == null) {
 				mUserCertLoading = getString(R.string.profile_cert_alias, mProfile.getName());
 				LoaderManager.getInstance(this).initLoader(USER_CERT_LOADER, null, mUserCertificateLoaderCallbacks);
@@ -364,7 +367,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 		if (mUserCertLoading != null) {
 			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setText(mUserCertLoading);
 			((TextView) mSelectUserCert.findViewById(android.R.id.text2)).setText(R.string.loading);
-		} else if (mUserCertEntry != null) {    /* clear any errors and set the new data */
+		} else if (mUserCertEntry != null) {
+			// clear any errors and set the new data
 			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setError(null);
 			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setText(mUserCertEntry.getAlias());
 			((TextView) mSelectUserCert.findViewById(android.R.id.text2)).setText(mUserCertEntry.getCertificate().getSubjectDN().toString());
@@ -445,7 +449,7 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 			st |= split.optBoolean("block-ipv6") ? VpnProfile.SPLIT_TUNNELING_BLOCK_IPV6 : 0;
 			profile.setSplitTunneling(st == 0 ? null : st);
 		}
-		/* only one of these can be set, prefer specific apps */
+		// only one of these can be set, prefer specific apps
 		String selectedApps = getApps(obj.optJSONArray("apps"));
 		String excludedApps = getApps(obj.optJSONArray("excluded-apps"));
 		if (!TextUtils.isEmpty(selectedApps)) {
@@ -478,7 +482,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 		ArrayList<String> subnets = new ArrayList<>();
 		JSONArray arr = split.optJSONArray(key);
 		if (arr != null) {
-			for (int i = 0; i < arr.length(); i++) {    /* replace all spaces, e.g. in "192.168.1.1 - 192.168.1.10" */
+			for (int i = 0; i < arr.length(); i++) {
+				// replace all spaces, e.g. in "192.168.1.1 - 192.168.1.10"
 				subnets.add(arr.getString(i).replace(" ", ""));
 			}
 		} else {
@@ -550,7 +555,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 				mDataSource.insertProfile(mProfile);
 			}
 			if (mCertEntry != null) {
-				try {    /* store the CA/server certificate */
+				try {
+					// store the CA/server certificate
 					KeyStore store = KeyStore.getInstance("LocalCertificateStore");
 					store.load(null, null);
 					store.setCertificateEntry(null, mCertEntry.getCertificate());
@@ -585,7 +591,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 				valid = false;
 			}
 		}
-		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE) && mUserCertEntry == null) {    /* let's show an error icon */
+		if (mProfile.getVpnType().has(VpnTypeFeature.CERTIFICATE) && mUserCertEntry == null) {
+			//let's show an error icon
 			((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setError("");
 			valid = false;
 		}
@@ -645,7 +652,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 			if (in != null) {
 				try {
 					result.Profile = streamToString(in);
-				} catch (OutOfMemoryError e) {    /* just use a generic exception */
+				} catch (OutOfMemoryError e) {
+					// just use a generic exception
 					result.ThrownException = new RuntimeException();
 				}
 			}
@@ -654,7 +662,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 
 		@Override
 		protected void onStartLoading() {
-			if (mData != null) {    /* if we have data ready, deliver it directly */
+			if (mData != null) {
+				// if we have data ready, deliver it directly
 				deliverResult(mData);
 			}
 			if (takeContentChanged() || mData == null) {
@@ -668,8 +677,9 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 				return;
 			}
 			mData = data;
-			if (isStarted()) {    /* if it is started we deliver the data directly,
-			 * otherwise this is handled in onStartLoading */
+			if (isStarted()) {
+				// if it is started we deliver the data directly,
+				// otherwise this is handled in onStartLoading
 				super.deliverResult(data);
 			}
 		}
@@ -720,15 +730,13 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 
 		@Override
 		public void alias(final String alias) {
-			/* alias() is not called from our main thread */
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					mUserCertLoading = alias;
-					updateUserCertView();
-					if (alias != null) {    /* otherwise the dialog was canceled, the request denied */
-						LoaderManager.getInstance(VpnProfileImportActivity.this).restartLoader(USER_CERT_LOADER, null, mUserCertificateLoaderCallbacks);
-					}
+			// alias() is not called from our main thread
+			runOnUiThread(() -> {
+				mUserCertLoading = alias;
+				updateUserCertView();
+				if (alias != null) {
+					// otherwise the dialog was canceled, the request denied
+					LoaderManager.getInstance(VpnProfileImportActivity.this).restartLoader(USER_CERT_LOADER, null, mUserCertificateLoaderCallbacks);
 				}
 			});
 		}
@@ -764,7 +772,8 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 
 		@Override
 		protected void onStartLoading() {
-			if (mData != null) {    /* if we have data ready, deliver it directly */
+			if (mData != null) {
+				// if we have data ready, deliver it directly
 				deliverResult(mData);
 			}
 			if (takeContentChanged() || mData == null) {
@@ -778,8 +787,9 @@ public class VpnProfileImportActivity extends AppCompatActivity {
 				return;
 			}
 			mData = data;
-			if (isStarted()) {    /* if it is started we deliver the data directly,
-			 * otherwise this is handled in onStartLoading */
+			if (isStarted()) {
+				// if it is started we deliver the data directly,
+				// otherwise this is handled in onStartLoading
 				super.deliverResult(data);
 			}
 		}

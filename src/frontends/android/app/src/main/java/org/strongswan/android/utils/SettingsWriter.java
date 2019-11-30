@@ -40,9 +40,9 @@ public class SettingsWriter {
 	 */
 	public SettingsWriter setValue(String key, String value) {
 		Pattern pattern = Pattern.compile("[^#{}=\"\\n\\t ]+");
-		if (key == null || !pattern.matcher(key).matches()) {
+		if (key == null || !pattern.matcher(key).matches())
 			return this;
-		}
+
 		String[] keys = key.split("\\.");
 		SettingsSection section = mTop;
 		section = findOrCreateSection(Arrays.copyOfRange(keys, 0, keys.length - 1));
@@ -142,11 +142,11 @@ public class SettingsWriter {
 		/**
 		 * Assigned key/value pairs
 		 */
-		LinkedHashMap<String, String> Settings = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, String> Settings = new LinkedHashMap<>();
 
 		/**
 		 * Assigned sub-sections
 		 */
-		LinkedHashMap<String, SettingsSection> Sections = new LinkedHashMap<String, SettingsWriter.SettingsSection>();
+		LinkedHashMap<String, SettingsSection> Sections = new LinkedHashMap<>();
 	}
 }

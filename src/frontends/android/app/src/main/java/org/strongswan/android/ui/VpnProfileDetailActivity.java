@@ -872,7 +872,8 @@ public class VpnProfileDetailActivity extends AppCompatActivity {
 		protected void onPostExecute(X509Certificate result) {
 			if (result != null) {
 				mUserCertEntry = new TrustedCertificateEntry(mAlias, result);
-			} else {    /* previously selected certificate is not here anymore */
+			} else {
+				// previously selected certificate is not here anymore
 				((TextView) mSelectUserCert.findViewById(android.R.id.text1)).setError("");
 				mUserCertEntry = null;
 			}

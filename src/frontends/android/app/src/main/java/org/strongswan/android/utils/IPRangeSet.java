@@ -126,32 +126,27 @@ public class IPRangeSet implements Iterable<IPRange> {
 	 * Get all the subnets derived from all the ranges in this set.
 	 */
 	public Iterable<IPRange> subnets() {
-		return new Iterable<IPRange>() {
+		return () -> new Iterator<IPRange>() {
+			private Iterator<IPRange> mIterator = mRanges.iterator();
+			private List<IPRange> mSubnets;
+
 			@Override
-			public Iterator<IPRange> iterator() {
-				return new Iterator<IPRange>() {
-					private Iterator<IPRange> mIterator = mRanges.iterator();
-					private List<IPRange> mSubnets;
+			public boolean hasNext() {
+				return (mSubnets != null && mSubnets.size() > 0) || mIterator.hasNext();
+			}
 
-					@Override
-					public boolean hasNext() {
-						return (mSubnets != null && mSubnets.size() > 0) || mIterator.hasNext();
-					}
+			@Override
+			public IPRange next() {
+				if (mSubnets == null || mSubnets.size() == 0) {
+					IPRange range = mIterator.next();
+					mSubnets = range.toSubnets();
+				}
+				return mSubnets.remove(0);
+			}
 
-					@Override
-					public IPRange next() {
-						if (mSubnets == null || mSubnets.size() == 0) {
-							IPRange range = mIterator.next();
-							mSubnets = range.toSubnets();
-						}
-						return mSubnets.remove(0);
-					}
-
-					@Override
-					public void remove() {
-						throw new UnsupportedOperationException();
-					}
-				};
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
@@ -172,10 +167,11 @@ public class IPRangeSet implements Iterable<IPRange> {
 	public String toString() {
 		// we could use TextUtils, but that causes the unit tests to fail
 		StringBuilder sb = new StringBuilder();
+
 		for (IPRange range : mRanges) {
-			if (sb.length() > 0) {
+			if (sb.length() > 0)
 				sb.append(" ");
-			}
+
 			sb.append(range.toString());
 		}
 		return sb.toString();

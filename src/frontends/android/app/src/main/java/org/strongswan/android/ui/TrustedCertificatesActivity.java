@@ -111,7 +111,7 @@ public class TrustedCertificatesActivity extends AppCompatActivity implements Tr
 	@Override
 	public void onTrustedCertificateSelected(TrustedCertificateEntry selected) {
 		if (mSelect) {
-			/* the user selected a certificate, return to calling activity */
+			// the user selected a certificate, return to calling activity
 			Intent intent = new Intent();
 			intent.putExtra(VpnProfileDataSource.KEY_CERTIFICATE, selected.getAlias());
 			setResult(Activity.RESULT_OK, intent);

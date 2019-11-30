@@ -107,24 +107,20 @@ public class VpnTileService extends TileService implements VpnStateService.VpnSt
 	@Override
 	public void onClick() {
 		if (mService != null) {
-			/* we operate on the current/most recently used profile, but fall back to configuration */
+			// we operate on the current/most recently used profile, but fall back to configuration
 			VpnProfile profile = mService.getProfile();
 			if (profile == null) {
 				profile = getProfile();
-			} else {   /* always get the plain profile without cached password */
+			} else {
+				// always get the plain profile without cached password
 				profile = mDataSource.getVpnProfile(profile.getId());
 			}
-			/* reconnect the profile in case of an error */
+			// reconnect the profile in case of an error
 			if (mService.getErrorState() == VpnStateService.ErrorState.NO_ERROR) {
 				switch (mService.getState()) {
 					case CONNECTING:
 					case CONNECTED:
-						Runnable disconnect = new Runnable() {
-							@Override
-							public void run() {
-								mService.disconnect();
-							}
-						};
+						Runnable disconnect = () -> mService.disconnect();
 						if (isLocked()) {
 							unlockAndRun(disconnect);
 						} else {
@@ -139,7 +135,8 @@ public class VpnTileService extends TileService implements VpnStateService.VpnSt
 				intent.setAction(VpnProfileControlActivity.START_PROFILE);
 				intent.putExtra(VpnProfileControlActivity.EXTRA_VPN_PROFILE_ID, profile.getUUID().toString());
 				if (profile.getVpnType().has(VpnType.VpnTypeFeature.USER_PASS) &&
-					profile.getPassword() == null) {    /* the user will have to enter the password, so collapse the drawer */
+					profile.getPassword() == null) {
+					// the user will have to enter the password, so collapse the drawer
 					startActivityAndCollapse(intent);
 				} else {
 					startActivity(intent);
@@ -162,7 +159,7 @@ public class VpnTileService extends TileService implements VpnStateService.VpnSt
 		VpnStateService.State state = mService.getState();
 		VpnStateService.ErrorState error = mService.getErrorState();
 
-		/* same as above, only use the configured profile if we have no active profile */
+		// same as above, only use the configured profile if we have no active profile
 		if (profile == null) {
 			profile = getProfile();
 		}

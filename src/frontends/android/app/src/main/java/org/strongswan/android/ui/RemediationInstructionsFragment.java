@@ -72,7 +72,8 @@ public class RemediationInstructionsFragment extends ListFragment {
 		super.onStart();
 
 		boolean two_pane = getFragmentManager().findFragmentById(R.id.remediation_instruction_fragment) != null;
-		if (two_pane) {    /* two-pane layout, make list items selectable */
+		if (two_pane) {
+			// two-pane layout, make list items selectable
 			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		}
 
@@ -82,7 +83,8 @@ public class RemediationInstructionsFragment extends ListFragment {
 		}
 		updateView(mInstructions);
 
-		if (two_pane && mCurrentPosition == -1 && mInstructions.size() > 0) {    /* two-pane layout, select first instruction */
+		if (two_pane && mCurrentPosition == -1 && mInstructions.size() > 0) {
+			// two-pane layout, select first instruction
 			mCurrentPosition = 0;
 			mListener.onRemediationInstructionSelected(mInstructions.get(0));
 		}

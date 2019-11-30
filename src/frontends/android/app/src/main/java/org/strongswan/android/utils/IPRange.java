@@ -327,7 +327,7 @@ public class IPRange implements Comparable<IPRange> {
 			byte[] from = mFrom.clone();
 			byte[] to = mTo.clone();
 
-			/* find a common prefix */
+			// find a common prefix
 			while (i < from.length && (from[i] & mBitmask[bit]) == (to[i] & mBitmask[bit])) {
 				if (++bit == 8) {
 					bit = 0;
@@ -336,29 +336,28 @@ public class IPRange implements Comparable<IPRange> {
 			}
 			prefix = i * 8 + bit;
 
-			/* at this point we know that the addresses are either equal, or that the
-			 * current bits in the 'from' and 'to' addresses are 0 and 1, respectively.
-			 * we now look at the rest of the bits as two binary trees (0=left, 1=right)
-			 * where 'from' and 'to' are both leaf nodes.  all leaf nodes between these
-			 * nodes are addresses contained in the range.  to collect them as subnets
-			 * we follow the trees from both leaf nodes to their root node and record
-			 * all complete subtrees (right for from, left for to) we come across as
-			 * subnets.  in that process host bits are zeroed out.  if both addresses
-			 * are equal we won't enter the loop below.
-			 *      0_____|_____1       for the 'from' address we assume we start on a
-			 *   0__|__ 1    0__|__1    left subtree (0) and follow the left edges until
-			 *  _|_   _|_   _|_   _|_   we reach the root of this subtree, which is
-			 * |   | |   | |   | |   |  either the root of this whole 'from'-subtree
-			 * 0   1 0   1 0   1 0   1  (causing us to leave the loop) or the root node
-			 * of the right subtree (1) of another node (which actually could be the
-			 * leaf node we start from).  that whole subtree gets recorded as subnet.
-			 * next we follow the right edges to the root of that subtree which again is
-			 * either the 'from'-root or the root node in the left subtree (0) of
-			 * another node.  the complete right subtree of that node is the next subnet
-			 * we record.  from there we assume that we are in that right subtree and
-			 * recursively follow right edges to its root.  for the 'to' address the
-			 * procedure is exactly the same but with left and right reversed.
-			 */
+			// at this point we know that the addresses are either equal, or that the
+			// current bits in the 'from' and 'to' addresses are 0 and 1, respectively.
+			// we now look at the rest of the bits as two binary trees (0=left, 1=right)
+			// where 'from' and 'to' are both leaf nodes.  all leaf nodes between these
+			// nodes are addresses contained in the range.  to collect them as subnets
+			// we follow the trees from both leaf nodes to their root node and record
+			// all complete subtrees (right for from, left for to) we come across as
+			// subnets.  in that process host bits are zeroed out.  if both addresses
+			// are equal we won't enter the loop below.
+			//      0_____|_____1       for the 'from' address we assume we start on a
+			//   0__|__ 1    0__|__1    left subtree (0) and follow the left edges until
+			//  _|_   _|_   _|_   _|_   we reach the root of this subtree, which is
+			// |   | |   | |   | |   |  either the root of this whole 'from'-subtree
+			// 0   1 0   1 0   1 0   1  (causing us to leave the loop) or the root node
+			// of the right subtree (1) of another node (which actually could be the
+			// leaf node we start from).  that whole subtree gets recorded as subnet.
+			// next we follow the right edges to the root of that subtree which again is
+			// either the 'from'-root or the root node in the left subtree (0) of
+			// another node.  the complete right subtree of that node is the next subnet
+			// we record.  from there we assume that we are in that right subtree and
+			// recursively follow right edges to its root.  for the 'to' address the
+			// procedure is exactly the same but with left and right reversed.
 			if (++bit == 8) {
 				bit = 0;
 				i++;

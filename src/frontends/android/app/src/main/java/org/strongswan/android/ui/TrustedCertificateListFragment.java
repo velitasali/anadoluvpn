@@ -99,7 +99,8 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 	}
 
 	@Override
-	public boolean onQueryTextSubmit(String query) {    /* already handled when the text changes */
+	public boolean onQueryTextSubmit(String query) {
+		// already handled when the text changes
 		return true;
 	}
 
@@ -111,7 +112,8 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 	}
 
 	@Override
-	public Loader<List<TrustedCertificateEntry>> onCreateLoader(int id, Bundle args) {    /* we don't need the id as we have only one loader */
+	public Loader<List<TrustedCertificateEntry>> onCreateLoader(int id, Bundle args) {
+		// we don't need the id as we have only one loader
 		return new CertificateListLoader(getActivity(), mSource);
 	}
 
@@ -164,7 +166,8 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 
 		@Override
 		protected void onStartLoading() {
-			if (mData != null) {    /* if we have data ready, deliver it directly */
+			if (mData != null) {
+				// if we have data ready, deliver it directly
 				deliverResult(mData);
 			}
 			if (takeContentChanged() || mData == null) {
@@ -178,8 +181,9 @@ public class TrustedCertificateListFragment extends ListFragment implements Load
 				return;
 			}
 			mData = data;
-			if (isStarted()) {    /* if it is started we deliver the data directly,
-			 * otherwise this is handled in onStartLoading */
+			if (isStarted()) {
+				// if it is started we deliver the data directly,
+				// otherwise this is handled in onStartLoading
 				if (mObserver == null) {
 					mObserver = new TrustedCertificateManagerObserver();
 					TrustedCertificateManager.getInstance().addObserver(mObserver);

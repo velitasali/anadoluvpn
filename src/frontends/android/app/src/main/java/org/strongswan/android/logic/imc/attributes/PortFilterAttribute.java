@@ -51,7 +51,7 @@ public class PortFilterAttribute implements Attribute {
 	public byte[] getEncoding() {
 		BufferedByteWriter writer = new BufferedByteWriter();
 		for (Pair<Protocol, Short> port : mPorts) {
-			/* we report open ports, so the BLOCKED flag is not set */
+			// we report open ports, so the BLOCKED flag is not set
 			writer.put((byte) 0);
 			writer.put(port.first.getValue());
 			writer.put16(port.second);

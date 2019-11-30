@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 public class VpnProfile implements Cloneable {
-	/* While storing this as EnumSet would be nicer this simplifies storing it in a database */
+	// While storing this as EnumSet would be nicer this simplifies storing it in a database
 	public static final int SPLIT_TUNNELING_BLOCK_IPV4 = 1;
 	public static final int SPLIT_TUNNELING_BLOCK_IPV6 = 2;
 
@@ -278,7 +278,7 @@ public class VpnProfile implements Cloneable {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o != null && o instanceof VpnProfile) {
+		if (o instanceof VpnProfile) {
 			VpnProfile other = (VpnProfile) o;
 			if (this.mUUID != null && other.getUUID() != null) {
 				return this.mUUID.equals(other.getUUID());

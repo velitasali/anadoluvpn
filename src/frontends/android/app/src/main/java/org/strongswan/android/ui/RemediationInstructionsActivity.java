@@ -31,15 +31,18 @@ public class RemediationInstructionsActivity extends AppCompatActivity implement
 		setContentView(R.layout.remediation_instructions);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		if (savedInstanceState != null) {    /* only update if we're not restoring */
+		if (savedInstanceState != null) {
+			// only update if we're not restoring
 			return;
 		}
 		RemediationInstructionsFragment frag = (RemediationInstructionsFragment) getSupportFragmentManager().findFragmentById(R.id.remediation_instructions_fragment);
-		if (frag != null) {    /* two-pane layout, update fragment */
+		if (frag != null) {
+			// two-pane layout, update fragment
 			Bundle extras = getIntent().getExtras();
 			ArrayList<RemediationInstruction> list = extras.getParcelableArrayList(RemediationInstructionsFragment.EXTRA_REMEDIATION_INSTRUCTIONS);
 			frag.updateView(list);
-		} else {    /* one-pane layout, create fragment */
+		} else {
+			// one-pane layout, create fragment
 			frag = new RemediationInstructionsFragment();
 			frag.setArguments(getIntent().getExtras());
 			getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, frag).commit();
@@ -50,7 +53,7 @@ public class RemediationInstructionsActivity extends AppCompatActivity implement
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home:
-				/* one-pane layout, pop possible fragment from stack, finish otherwise */
+				// one-pane layout, pop possible fragment from stack, finish otherwise
 				if (!getSupportFragmentManager().popBackStackImmediate()) {
 					finish();
 				}
@@ -65,9 +68,11 @@ public class RemediationInstructionsActivity extends AppCompatActivity implement
 	public void onRemediationInstructionSelected(RemediationInstruction instruction) {
 		RemediationInstructionFragment frag = (RemediationInstructionFragment) getSupportFragmentManager().findFragmentById(R.id.remediation_instruction_fragment);
 
-		if (frag != null) {    /* two-pane layout, update directly */
+		if (frag != null) {
+			// two-pane layout, update directly
 			frag.updateView(instruction);
-		} else {    /* one-pane layout, replace fragment */
+		} else {
+			// one-pane layout, replace fragment
 			frag = new RemediationInstructionFragment();
 			Bundle args = new Bundle();
 			args.putParcelable(RemediationInstructionFragment.ARG_REMEDIATION_INSTRUCTION, instruction);

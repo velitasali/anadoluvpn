@@ -18,7 +18,7 @@ package org.strongswan.android.data;
 import java.util.EnumSet;
 
 public enum VpnType {
-	/* the order here must match the items in R.array.vpn_types */
+	// the order here must match the items in R.array.vpn_types
 	IKEV2_EAP("ikev2-eap", EnumSet.of(VpnTypeFeature.USER_PASS)),
 	IKEV2_CERT("ikev2-cert", EnumSet.of(VpnTypeFeature.CERTIFICATE)),
 	IKEV2_CERT_EAP("ikev2-cert-eap", EnumSet.of(VpnTypeFeature.USER_PASS, VpnTypeFeature.CERTIFICATE)),

@@ -43,11 +43,10 @@ public enum ImcState {
 	 * @return the enum entry or null
 	 */
 	public static ImcState fromValue(int value) {
-		for (ImcState state : ImcState.values()) {
-			if (state.mValue == value) {
+		for (ImcState state : ImcState.values())
+			if (state.mValue == value)
 				return state;
-			}
-		}
+
 		return null;
 	}
 }

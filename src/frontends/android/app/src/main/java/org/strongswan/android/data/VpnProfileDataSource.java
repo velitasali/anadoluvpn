@@ -145,7 +145,8 @@ public class VpnProfileDataSource {
 				db.execSQL("ALTER TABLE " + TABLE_VPNPROFILE + " ADD " + KEY_VPN_TYPE +
 					" TEXT DEFAULT '';");
 			}
-			if (oldVersion < 4) {    /* remove NOT NULL constraint from username column */
+			if (oldVersion < 4) {
+				// remove NOT NULL constraint from username column
 				updateColumns(db, 4);
 			}
 			if (oldVersion < 5) {
@@ -199,7 +200,8 @@ public class VpnProfileDataSource {
 				db.execSQL("ALTER TABLE " + TABLE_VPNPROFILE + " ADD " + KEY_ESP_PROPOSAL +
 					" TEXT;");
 			}
-			if (oldVersion < 16) {    /* add a UUID to all entries that haven't one yet */
+			if (oldVersion < 16) {
+				// add a UUID to all entries that haven't one yet
 				db.beginTransaction();
 				try {
 					Cursor cursor = db.query(TABLE_VPNPROFILE, getColumns(16), KEY_UUID + " is NULL", null, null, null, null);

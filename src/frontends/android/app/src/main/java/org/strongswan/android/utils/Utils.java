@@ -64,9 +64,10 @@ public class Utils {
 	 */
 	public static InetAddress parseInetAddress(String address) throws UnknownHostException {
 		byte[] bytes = parseInetAddressBytes(address);
-		if (bytes == null) {
+
+		if (bytes == null)
 			throw new UnknownHostException();
-		}
+
 		return InetAddress.getByAddress(bytes);
 	}
 }

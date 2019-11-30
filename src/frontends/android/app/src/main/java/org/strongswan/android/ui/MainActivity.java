@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements OnVpnProfileSelec
 	}
 
 	// Class that loads the cached CA certificates.
-	private class LoadCertificatesTask extends AsyncTask<Void, Void, TrustedCertificateManager> {
+	private static class LoadCertificatesTask extends AsyncTask<Void, Void, TrustedCertificateManager> {
 		@Override
 		protected TrustedCertificateManager doInBackground(Void... params) {
 			return TrustedCertificateManager.getInstance().load();
@@ -160,10 +160,12 @@ public class MainActivity extends AppCompatActivity implements OnVpnProfileSelec
 			String size;
 			long s = 0;
 
-			for (String file : list) {
-				File crl = getActivity().getFileStreamPath(file);
-				s += crl.length();
-			}
+			if (list != null)
+				for (String file : list) {
+					File crl = getActivity().getFileStreamPath(file);
+					s += crl.length();
+				}
+
 			size = Formatter.formatFileSize(getActivity(), s);
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())

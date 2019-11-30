@@ -18,7 +18,7 @@
 package org.strongswan.android.logic.imc.attributes;
 
 public enum AttributeType {
-	/* IETF standard PA-TNC attribute types defined by RFC 5792 */
+	// IETF standard PA-TNC attribute types defined by RFC 5792
 	IETF_TESTING(PrivateEnterpriseNumber.IETF, 0),
 	IETF_ATTRIBUTE_REQUEST(PrivateEnterpriseNumber.IETF, 1),
 	IETF_PRODUCT_INFORMATION(PrivateEnterpriseNumber.IETF, 2),
@@ -33,7 +33,7 @@ public enum AttributeType {
 	IETF_FORWARDING_ENABLED(PrivateEnterpriseNumber.IETF, 11),
 	IETF_FACTORY_DEFAULT_PWD_ENABLED(PrivateEnterpriseNumber.IETF, 12),
 	IETF_RESERVED(PrivateEnterpriseNumber.IETF, 0xffffffff),
-	/* ITA attributes */
+	// ITA attributes
 	ITA_SETTINGS(PrivateEnterpriseNumber.ITA, 4),
 	ITA_DEVICE_ID(PrivateEnterpriseNumber.ITA, 8);
 

@@ -33,9 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class LogContentProvider extends ContentProvider {
 	private static final String AUTHORITY = "com.velitasali.android.vpn.content.log";
-	/* an Uri is valid for 30 minutes */
+	// an Uri is valid for 30 minutes
 	private static final long URI_VALIDITY = 30 * 60 * 1000;
-	private static ConcurrentHashMap<Uri, Long> mUris = new ConcurrentHashMap<Uri, Long>();
+	private static ConcurrentHashMap<Uri, Long> mUris = new ConcurrentHashMap<>();
+
 	private File mLogFile;
 
 	public LogContentProvider() {
@@ -53,75 +54,83 @@ public class LogContentProvider extends ContentProvider {
 	 * @return null if failed to create the Uri
 	 */
 	public static Uri createContentUri() {
-		SecureRandom random;
 		try {
-			random = SecureRandom.getInstance("SHA1PRNG");
-		} catch (NoSuchAlgorithmException e) {
-			return null;
+			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+			Uri uri = Uri.parse("content://" + AUTHORITY + "/" + random.nextLong());
+
+			mUris.put(uri, SystemClock.uptimeMillis());
+
+			return uri;
+		} catch (NoSuchAlgorithmException ignored) {
 		}
-		Uri uri = Uri.parse("content://" + AUTHORITY + "/" + random.nextLong());
-		mUris.put(uri, SystemClock.uptimeMillis());
-		return uri;
+
+		return null;
 	}
 
 	@Override
 	public String getType(Uri uri) {
-		/* MIME type for our log file */
+		// MIME type for our log file
 		return "text/plain";
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection,
-						String[] selectionArgs, String sortOrder) {
-		/* this is called by apps to find out the name and size of the file.
-		 * since we only provide a single file this is simple to implement */
-		if (projection == null || projection.length < 1) {
+	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+		// this is called by apps to find out the name and size of the file.
+		// since we only provide a single file this is simple to implement
+		if (projection == null || projection.length < 1)
 			return null;
-		}
+
 		Long timestamp = mUris.get(uri);
-		if (timestamp == null) {    /* don't check the validity as this information is not really private */
+
+		if (timestamp == null)
+			// don't check the validity as this information is not really private
 			return null;
-		}
+
 		MatrixCursor cursor = new MatrixCursor(projection, 1);
-		if (OpenableColumns.DISPLAY_NAME.equals(cursor.getColumnName(0))) {
+
+		if (OpenableColumns.DISPLAY_NAME.equals(cursor.getColumnName(0)))
 			cursor.newRow().add(CharonVpnService.LOG_FILE);
-		} else if (OpenableColumns.SIZE.equals(cursor.getColumnName(0))) {
+		else if (OpenableColumns.SIZE.equals(cursor.getColumnName(0)))
 			cursor.newRow().add(mLogFile.length());
-		} else {
+		else
 			return null;
-		}
+
 		return cursor;
 	}
 
 	@Override
 	public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
 		Long timestamp = mUris.get(uri);
+
 		if (timestamp != null) {
 			long elapsed = SystemClock.uptimeMillis() - timestamp;
-			if (elapsed > 0 && elapsed < URI_VALIDITY) {    /* we fail if clock wrapped, should happen rarely though */
-				return ParcelFileDescriptor.open(mLogFile, ParcelFileDescriptor.MODE_CREATE | ParcelFileDescriptor.MODE_READ_ONLY);
-			}
+
+			if (elapsed > 0 && elapsed < URI_VALIDITY)
+				// we fail if clock wrapped, should happen rarely though
+				return ParcelFileDescriptor.open(mLogFile, ParcelFileDescriptor.MODE_CREATE
+					| ParcelFileDescriptor.MODE_READ_ONLY);
+
 			mUris.remove(uri);
 		}
+
 		return super.openFile(uri, mode);
 	}
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		/* not supported */
+		// not supported
 		return null;
 	}
 
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		/* not supported */
+		// not supported
 		return 0;
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String selection,
-					  String[] selectionArgs) {
-		/* not supported */
+	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+		// not supported
 		return 0;
 	}
 }
